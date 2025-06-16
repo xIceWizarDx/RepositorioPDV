@@ -968,7 +968,7 @@
               </div>
               </td>
               </tr>
-              `;
+            `;
           });
           $(prefix + '#modalBuscaProdutoTable tbody').html(html);
         }
