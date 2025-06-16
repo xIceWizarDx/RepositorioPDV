@@ -578,13 +578,16 @@
   <script src="{{ asset('js/script.js') }}"></script>
 
   <script>
+    // Bloco principal do PDV: controla toda a interação do front-end
     (function() {
+      // Objetos globais utilizados pela aplicação
       window.itensVenda = window.itensVenda || [];
       window.parcelasPagamento = window.parcelasPagamento || [];
       window.produtosCache = [];
       window.paymentConditions = @json($paymentConditions, JSON_UNESCAPED_UNICODE);
 
 
+      // Ao retornar à página via back/forward recarrega o cache de produtos
       window.addEventListener('pageshow', event => {
         const navEntries = performance.getEntriesByType('navigation');
         const navType = navEntries.length ? navEntries[0].type : '';
@@ -595,6 +598,7 @@
       });
 
 
+      // Exibe mensagens de alerta de forma centralizada
       window.showToast = (message, type = 'info') => {
         console.log('showToast:', message, type);
         const container = document.getElementById('toastContainer');
@@ -612,10 +616,13 @@
       };
 
 
+      // DOM pronto: inicia configuração de eventos e máscaras
       $(function() {
 
         const prefix = '.pdv-wrapper ';
 
+        /* ================= Funções utilitárias ================= */
+        // Converte datas no formato DD/MM/AAAA para o padrao ISO AAAA-MM-DD
         function formatDateBRtoISO(br) {
           console.log('DEBUG formatDateBRtoISO receber:', br);
           const [d, m, y] = br.split('/');
@@ -624,6 +631,7 @@
           return iso;
         }
 
+        // Prepara estrutura de dados para envio ao backend
         function montarMapeamentos() {
           const orc_itens = itensVenda.map(it => ({
             produto_id: it.produto_id,
@@ -697,6 +705,11 @@
         let produtoFoiAdicionado = false;
         let adicionandoProduto = false;
 
+        /* ================= Gerenciamento de produtos ================= */
+
+        // -- Funções de cache --
+
+        // Busca todos os produtos para uso em cache local
         function carregarProdutosCache() {
           return $.get('{{ route("pdv.search.products") }}', {
               q: ''
@@ -712,6 +725,7 @@
 
         carregarProdutosCache();
 
+        // Filtra produtos já carregados em cache
         function buscarProdutosNoCache(query) {
           if (!query) return [];
           const q = query.toLowerCase();
@@ -733,6 +747,7 @@
           return todos;
         }
 
+        // Consulta produtos no backend conforme o termo de busca
         function buscarProdutos(term) {
           return $.get('{{ route("pdv.search.products") }}', {
               q: term || ''
@@ -742,6 +757,7 @@
             });
         }
 
+        // Atualiza o dropdown de produtos exibindo os resultados obtidos
         function preencherResultadosDropdown(data, query = '') {
           if (produtoFoiAdicionado) {
             produtoFoiAdicionado = false;
@@ -1187,6 +1203,7 @@
           }, 400);
         });
 
+        /* --- Atualização da interface de itens --- */
         function renderizarItensTabela() {
           const $tbody = $(prefix + '#listaItensVenda').empty();
           if (!itensVenda.length) {
@@ -1220,6 +1237,7 @@
           console.log('Item removido →', itensVenda);
         });
 
+        // Insere item selecionado à lista da venda
         function adicionarItemPDV(prod) {
           if (adicionandoProduto) {
             return;
@@ -1305,6 +1323,7 @@
           produtoIndexAtivo = 0;
         });
 
+        // Inicializa modal para pagamento com múltiplas formas
         function iniciarMultiplasFormasPagamentoModal() {
           parcelasPagamento = [];
           window.parcelasPagamento = parcelasPagamento;
@@ -1312,6 +1331,7 @@
           adicionarNovaFormaPagamentoMultiplasModal();
         }
 
+        // Adiciona uma nova linha de pagamento no modal de múltiplas formas
         function adicionarNovaFormaPagamentoMultiplasModal(formaId = '', valor = '') {
           let valorFaltanteTexto = $(prefix + '#valorFaltanteDisplay').text();
           valorFaltanteTexto = valorFaltanteTexto.replace(/[^\d,.-]/g, '').replace(',', '.');
@@ -1344,6 +1364,7 @@
           }
         }
 
+        // Verifica se a forma de pagamento já foi escolhida
         function formaPagamentoDuplicada(valorSelecionado, idAtual) {
           let count = 0;
           $(prefix + '#multiplasFormasListModal select.forma-pagamento-select').each(function() {
@@ -2058,6 +2079,7 @@
           });
         }
 
+        // Atualiza o valor que ainda falta ser pago na venda
         function calcularValorFaltante() {
           const totL = parseFloatStrict($(prefix + '#totalLiquidoValor').text().replace(/[^0-9,.-]/g, ''));
           const pago = parcelasPagamento.reduce((a, b) => a + b.valor, 0);
@@ -2075,6 +2097,7 @@
           }
         }
 
+        // Máscara de moeda que evolui conforme o usuário digita
         function aplicarMascaraMoedaProgressiva(input) {
           let valor = input.val();
 
@@ -2124,6 +2147,7 @@
           });
         });
 
+        // Aplica valor padrão nos campos de moeda ao carregar a página
         $(function() {
           inputsMoeda.forEach(selector => {
             const $el = $(selector);
@@ -2133,6 +2157,7 @@
           });
         });
 
+        // Mostra ou esconde a área de descontos do modal de finalização
         $(prefix + '#toggleDescontosFechamento').click(function(e) {
           e.preventDefault();
           $(prefix + '#areaDescontosFechamento').toggleClass('d-none');
@@ -2140,6 +2165,7 @@
           $(this).find('i').removeClass('fa-chevron-down fa-chevron-up').addClass(icon);
         });
 
+        // Ao pressionar Enter no campo de quantidade, foca o campo de produto
         $(prefix + '#quantidadeInput').on('keydown', function(e) {
           if (e.key === 'Enter') {
             e.preventDefault();
@@ -2147,6 +2173,7 @@
           }
         });
 
+        // Atalhos de teclado para agilizar o atendimento
         $(document).keydown(function(e) {
           if (e.ctrlKey) {
             if (e.key === '0') {
