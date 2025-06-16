@@ -1710,6 +1710,7 @@
 
           modalEl.addEventListener('hidden.bs.modal', () => {
             backdrop1.remove();
+            clearFinalizacaoModal();
           });
         });
 
