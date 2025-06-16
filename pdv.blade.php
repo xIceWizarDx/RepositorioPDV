@@ -578,35 +578,36 @@
   <script src="{{ asset('js/script.js') }}"></script>
 
   <script>
-    window.itensVenda = window.itensVenda || [];
-    window.parcelasPagamento = window.parcelasPagamento || [];
-    window.produtosCache = [];
-    window.paymentConditions = @json($paymentConditions, JSON_UNESCAPED_UNICODE);
-
-
-    window.addEventListener('pageshow', event => {
-      const navEntries = performance.getEntriesByType('navigation');
-      const navType = navEntries.length ? navEntries[0].type : '';
-
-      if (event.persisted || navType === 'back_forward') {
-        carregarProdutosCache();
-      }
-    });
-
-
-    window.showToast = (message, type = 'info') => {
-      console.log('showToast:', message, type);
-      const container = document.getElementById('toastContainer');
-      const toastEl = document.createElement('div');
-      toastEl.className = `toast align-items-center text-bg-${type} border-0 mb-2`;
-      toastEl.setAttribute('role', 'alert');
-      toastEl.setAttribute('data-bs-delay', '3000');
-      toastEl.innerHTML = `
-      <div class="d-flex">
-      <div class="toast-body">${message}</div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-      </div>`;
-      container.appendChild(toastEl);
+    (function () {
+        window.itensVenda = window.itensVenda || [];
+      window.parcelasPagamento = window.parcelasPagamento || [];
+      window.produtosCache = [];
+      window.paymentConditions = @json($paymentConditions, JSON_UNESCAPED_UNICODE);
+  
+  
+      window.addEventListener('pageshow', event => {
+        const navEntries = performance.getEntriesByType('navigation');
+        const navType = navEntries.length ? navEntries[0].type : '';
+  
+        if (event.persisted || navType === 'back_forward') {
+          carregarProdutosCache();
+        }
+      });
+  
+  
+      window.showToast = (message, type = 'info') => {
+        console.log('showToast:', message, type);
+        const container = document.getElementById('toastContainer');
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast align-items-center text-bg-${type} border-0 mb-2`;
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('data-bs-delay', '3000');
+        toastEl.innerHTML = `
+        <div class="d-flex">
+        <div class="toast-body">${message}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>`;
+        container.appendChild(toastEl);
       new bootstrap.Toast(toastEl).show();
     };
 
@@ -1859,11 +1860,6 @@
           .join('/');
         console.log('DEBUG condicoes:', condicoes, 'formas:', formas);
 
-        function formatDateBRtoISO(br) {
-          const [d, m, y] = br.split('/');
-          return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-        }
-
         const orc_parcelas = parcelasPagamento.map(p => ({
           seq: p.seq,
           valor: p.valor,
@@ -2208,5 +2204,6 @@
         }
       });
     });
+    })();
   </script>
   @endsection
