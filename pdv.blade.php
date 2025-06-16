@@ -552,15 +552,37 @@
     <div class="modal-dialog modal-dialog-centered" role="document" tabindex="-1">
       <div class="modal-content" tabindex="-1">
         <div class="modal-header">
-          <h5 class="modal-title" id="modalConfirmarNFeLabel">Emitir Nota Fiscal Eletrônica?</h5>
+          <h5 class="modal-title" id="modalConfirmarNFeLabel">Emitir NFC-e?</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
-          Deseja gerar a Nota Fiscal Eletrônica para essa venda?
+          Deseja gerar a NFC-e para essa venda?
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="btnNaoEmitirNFe" data-bs-dismiss="modal">Não</button>
-          <button type="button" class="btn btn-primary" id="btnConfirmarEmitirNFe">Sim, emitir NF-e</button>
+          <button type="button" class="btn btn-primary" id="btnConfirmarEmitirNFe">Sim, emitir NFC-e</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ 
+  <div class="modal fade" id="modalNFCe" tabindex="-1" aria-labelledby="modalNFCeLabel" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalNFCeLabel">NFC-e</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p id="nfceMensagem">Deseja emitir a NFC-e para esta venda?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-primary" id="btnEmitirNFCe">Emitir NFC-e</button>
+          <button type="button" class="btn btn-info d-none" id="btnConsultarNFCe">Consultar Status</button>
+          <button type="button" class="btn btn-success d-none" id="btnImprimirNFCe">Imprimir DANFE</button>
+          <button type="button" class="btn btn-danger d-none" id="btnCancelarNFCe">Cancelar NFC-e</button>
         </div>
       </div>
     </div>
@@ -667,6 +689,7 @@
         let pendingOrcamentoId = null;
         let emitirNFeEscolha = null;
         let finalizandoOrcamento = false;
+        let currentNfce = { orcamentoId: null, chave: null };
 
 
         console.log('DEBUG: valor inicial #clienteInput2 ->', $(prefix + '#clienteInput2').val());
@@ -1574,7 +1597,6 @@
         });
 
 
-        function abrirModalConfirmarNFe() {
           nfeAwaitingEmission = false;
           pendingOrcamentoId = null;
           console.log('DEBUG abrirModalConfirmarNFe: preparando modal NFe');
@@ -1622,6 +1644,78 @@
           });
         }
 
+  $("#nfceMensagem").text("Deseja emitir a NFC-e para esta venda?");
+  $("#btnEmitirNFCe").removeClass("d-none").prop("disabled", false);
+  $("#btnConsultarNFCe,#btnImprimirNFCe,#btnCancelarNFCe").addClass("d-none");
+  const modalEl = document.getElementById("modalNFCe");
+  const modal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
+  modal.show();
+}
+
+function enviarNFCe() {
+  if (!currentNfce.orcamentoId) return;
+  const btn = $('#btnEmitirNFCe');
+  btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Enviando...');
+  $.post('/nfe/enviar', { orcamento_id: currentNfce.orcamentoId })
+    .done(res => {
+      $('#btnConsultarNFCe,#btnCancelarNFCe').removeClass('d-none');
+      if (res.status && res.status.toLowerCase().includes('autoriz')) {
+        currentNfce.chave = res.chave || null;
+        $('#nfceMensagem').text('✅ NFC-e Autorizada');
+        $('#btnImprimirNFCe').removeClass('d-none');
+        showToast('NFC-e Autorizada', 'success');
+      } else {
+        $('#nfceMensagem').text(res.mensagem || 'Erro ao emitir NFC-e');
+        showToast(res.mensagem || 'Erro ao emitir NFC-e', 'danger');
+        btn.prop('disabled', false);
+      }
+    })
+    .fail(() => {
+      showToast('Falha na comunicação', 'danger');
+      btn.prop('disabled', false);
+    })
+    .always(() => {
+      btn.html('Emitir NFC-e');
+    });
+}
+
+function consultarNFCe() {
+  if (!currentNfce.orcamentoId) return;
+  const btn = $('#btnConsultarNFCe');
+  btn.prop('disabled', true);
+  $.get('/nfe/status', { orcamento_id: currentNfce.orcamentoId })
+    .done(res => {
+      $('#nfceMensagem').text(res.mensagem || ('Status: ' + res.status));
+      if (res.status && res.status.toLowerCase().includes('autoriz')) {
+        $('#btnImprimirNFCe').removeClass('d-none');
+      }
+    })
+    .fail(() => {
+      showToast('Falha na comunicação', 'danger');
+    })
+    .always(() => btn.prop('disabled', false));
+}
+
+function imprimirNFCe() {
+  if (!currentNfce.orcamentoId) return;
+  window.open('/nfe/imprimir?orcamento_id=' + currentNfce.orcamentoId, '_blank');
+}
+
+function cancelarNFCe() {
+  if (!currentNfce.orcamentoId) return;
+  if (!confirm('Cancelar NFC-e?')) return;
+  const btn = $('#btnCancelarNFCe');
+  btn.prop('disabled', true);
+  $.post('/nfe/cancelar', { orcamento_id: currentNfce.orcamentoId })
+    .done(res => {
+      $('#nfceMensagem').text(res.mensagem || 'Cancelada');
+      showToast(res.mensagem || 'NFC-e cancelada', res.status === 'OK' ? 'success' : 'info');
+    })
+    .fail(() => {
+      showToast('Falha na comunicação', 'danger');
+    })
+    .always(() => btn.prop('disabled', false));
+}
 
         function finalizarVendaSemNFe(payloadOrc, payloadFin, payloadFat) {
           console.log('DEBUG finalizarVendaSemNFe - payloadOrcamento:', payloadOrc);
@@ -1929,7 +2023,6 @@
           };
           console.log('DEBUG payloadFaturamento:', payloadFaturamento);
 
-          abrirModalConfirmarNFe();
 
           emitirNFeEscolha = null;
           pendingOrcamentoId = null;
@@ -1947,6 +2040,8 @@
                 'notaNumero:', notaNumero
               );
               pendingOrcamentoId = orcamentoId;
+              currentNfce.orcamentoId = orcamentoId;
+              abrirModalNFCe();
               finalizandoOrcamento = false;
               isProcessandoFinalizacao = false;
               $btn.prop('disabled', false).html('Confirmar Finalização');
@@ -2009,7 +2104,7 @@
                     showToast(err || 'Erro ao emitir nota.', 'danger');
                   });
               } else {
-                console.log('DEBUG aguardando escolha do usuário para emitir NF-e');
+                console.log('DEBUG aguardando escolha do usuário para emitir NFC-e');
               }
             })
 
@@ -2055,7 +2150,7 @@
                     isProcessandoEmissaoNFe = false;
                   });
               } else {
-                console.log('DEBUG aguardando faturamento antes de emitir NF-e');
+                console.log('DEBUG aguardando faturamento antes de emitir NFC-e');
                 isProcessandoEmissaoNFe = false;
               }
             });
@@ -2079,6 +2174,11 @@
           });
 
         });
+          $("#btnEmitirNFCe").on("click", enviarNFCe);
+          $("#btnConsultarNFCe").on("click", consultarNFCe);
+          $("#btnImprimirNFCe").on("click", imprimirNFCe);
+          $("#btnCancelarNFCe").on("click", cancelarNFCe);
+
 
 
         function calcularTotais() {
