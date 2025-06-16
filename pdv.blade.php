@@ -580,6 +580,7 @@
   <script>
     // Bloco principal do PDV: controla toda a interação do front-end
     (function() {
+      'use strict'; // habilita modo estrito para evitar comportamentos inseguros
       // Objetos globais utilizados pela aplicação
       window.itensVenda = window.itensVenda || [];
       window.parcelasPagamento = window.parcelasPagamento || [];
@@ -598,6 +599,7 @@
       });
 
 
+      /* ================= Segurança e mensagens ================= */
       // Exibe mensagens de alerta de forma centralizada
       window.showToast = (message, type = 'info') => {
         console.log('showToast:', message, type);
@@ -606,9 +608,10 @@
         toastEl.className = `toast align-items-center text-bg-${type} border-0 mb-2`;
         toastEl.setAttribute('role', 'alert');
         toastEl.setAttribute('data-bs-delay', '3000');
+        const safeMessage = escapeHTML(message);
         toastEl.innerHTML = `
         <div class="d-flex">
-        <div class="toast-body">${message}</div>
+        <div class="toast-body">${safeMessage}</div>
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>`;
         container.appendChild(toastEl);
@@ -622,6 +625,16 @@
         const prefix = '.pdv-wrapper ';
 
         /* ================= Funções utilitárias ================= */
+        // Escapa texto para evitar injeção HTML ao inserir conteúdo dinâmico
+        function escapeHTML(str) {
+          return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+        }
+
         // Converte datas no formato DD/MM/AAAA para o padrao ISO AAAA-MM-DD
         function formatDateBRtoISO(br) {
           console.log('DEBUG formatDateBRtoISO receber:', br);
@@ -766,18 +779,20 @@
               html = '<li><span class="dropdown-item text-muted">Nenhum resultado encontrado</span></li>';
             } else {
               data.forEach(function(item, idx) {
+                const nome = escapeHTML(item.text);
+                const cod = escapeHTML(item.codigo_ref || item.cEAN || '-');
                 html += `<li>
-                  <a href="#" class="dropdown-item${idx === 0 ? ' active' : ''}" 
-                  data-id="${item.id}" 
-                  data-preco_vista="${item.preco_vista}" 
-                  data-preco_prazo="${item.preco_prazo}" 
-                  data-estoque="${item.estoque}" 
-                  data-text="${item.text}"
-                  data-codigo_ref="${item.codigo_ref || ''}"
-                  data-cEAN="${item.cEAN || ''}">
-                  <strong>${item.text}</strong>
+                  <a href="#" class="dropdown-item${idx === 0 ? ' active' : ''}"
+                  data-id="${item.id}"
+                  data-preco_vista="${item.preco_vista}"
+                  data-preco_prazo="${item.preco_prazo}"
+                  data-estoque="${item.estoque}"
+                  data-text="${nome}"
+                  data-codigo_ref="${cod}"
+                  data-cEAN="${escapeHTML(item.cEAN || '')}">
+                  <strong>${nome}</strong>
                   <br>
-                  <small>Cód: ${item.codigo_ref || item.cEAN || '-'} | À vista: ${(item.preco_vista ? parseFloat(item.preco_vista).toLocaleString('pt-BR', { style: 'currency',   currency:           'BRL' }) : '-')} | A prazo: ${(item.preco_prazo ? parseFloat(item.preco_prazo).toLocaleString('pt-BR', { style: 'currency', 'currency':   'BRL' }) : '-')} | Estoque: $         {item.estoque ?? '-'}</small>
+                  <small>Cód: ${cod} | À vista: ${(item.preco_vista ? parseFloat(item.preco_vista).toLocaleString('pt-BR', { style: 'currency',   currency:           'BRL' }) : '-')} | A prazo: ${(item.preco_prazo ? parseFloat(item.preco_prazo).toLocaleString('pt-BR', { style: 'currency', 'currency':   'BRL' }) : '-')} | Estoque: ${item.estoque ?? '-'}</small>
                   </a>
                 </li>`;
               });
@@ -800,23 +815,25 @@
           let html = '';
           if (!Array.isArray(data) || !data.length) {
             html = '<li><span class="dropdown-item text-muted">Nenhum resultado encontrado</span></li>';
-          } else {
-            data.forEach(function(item, idx) {
-              html += `<li>
-                <a href="#" class="dropdown-item${idx === 0 ? ' active' : ''}" 
-                data-id="${item.id}" 
-                data-preco_vista="${item.preco_vista}" 
-                data-preco_prazo="${item.preco_prazo}" 
-                data-estoque="${item.estoque}" 
-                data-text="${item.text}"
-                data-codigo_ref="${item.codigo_ref || ''}"
-                data-cEAN="${item.cEAN || ''}">
-                <strong>${item.text}</strong>
-                <br>
-                <small>Cód: ${item.codigo_ref || item.cEAN || '-'} | À vista: ${(item.preco_vista ? parseFloat(item.preco_vista).toLocaleString('pt-BR', { style: 'currency', currency:           'BRL' }) : '-')} | A prazo: ${(item.preco_prazo ? parseFloat(item.preco_prazo).toLocaleString('pt-BR', { style: 'currency', 'currency': 'BRL' }) : '-')} | Estoque: $         {item.estoque ?? '-'}</small>
-                </a>
-              </li>`;
-            });
+            } else {
+              data.forEach(function(item, idx) {
+                const nome = escapeHTML(item.text);
+                const cod = escapeHTML(item.codigo_ref || item.cEAN || '-');
+                html += `<li>
+                  <a href="#" class="dropdown-item${idx === 0 ? ' active' : ''}"
+                  data-id="${item.id}"
+                  data-preco_vista="${item.preco_vista}"
+                  data-preco_prazo="${item.preco_prazo}"
+                  data-estoque="${item.estoque}"
+                  data-text="${nome}"
+                  data-codigo_ref="${cod}"
+                  data-cEAN="${escapeHTML(item.cEAN || '')}">
+                  <strong>${nome}</strong>
+                  <br>
+                  <small>Cód: ${cod} | À vista: ${(item.preco_vista ? parseFloat(item.preco_vista).toLocaleString('pt-BR', { style: 'currency', currency:           'BRL' }) : '-')} | A prazo: ${(item.preco_prazo ? parseFloat(item.preco_prazo).toLocaleString('pt-BR', { style: 'currency', 'currency': 'BRL' }) : '-')} | Estoque: ${item.estoque ?? '-'}</small>
+                  </a>
+                </li>`;
+              });
           }
           $(prefix + '#produtoSearchResults').html(html);
 
@@ -956,9 +973,11 @@
             return;
           }
           let html = '';
-          data.forEach(function(prod) {
-            const selecionado = produtosSelecionadosModal.has(prod.id);
-            const estoqueNum = parseInt(prod.estoque);
+            data.forEach(function(prod) {
+              const nome = escapeHTML(prod.text);
+              const cod = escapeHTML(prod.codigo_ref || prod.cEAN || '-');
+              const selecionado = produtosSelecionadosModal.has(prod.id);
+              const estoqueNum = parseInt(prod.estoque);
             const podeSelecionar = !isNaN(estoqueNum) && estoqueNum > 0;
             let quantidade = 0;
             if (selecionado) {
@@ -966,21 +985,21 @@
               quantidade = (qtdSelecionada > estoqueNum) ? estoqueNum : qtdSelecionada;
               produtosSelecionadosModal.get(prod.id).quantidade = quantidade;
             }
-            html += `
-              <tr data-id="${prod.id}"
-              data-text="${prod.text}"
-              data-preco_vista="${prod.preco_vista}"
-              data-preco_prazo="${prod.preco_prazo}"
-              data-estoque="${prod.estoque}">
-              <td>${prod.codigo_ref || prod.cEAN || '-'}</td>
-              <td>${prod.text}</td>
+              html += `
+                <tr data-id="${prod.id}"
+                data-text="${nome}"
+                data-preco_vista="${prod.preco_vista}"
+                data-preco_prazo="${prod.preco_prazo}"
+                data-estoque="${prod.estoque}">
+                <td>${cod}</td>
+                <td>${nome}</td>
               <td class="text-end">${prod.preco_vista ? parseFloat(prod.preco_vista).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-'}</td>
               <td class="text-end">${prod.preco_prazo ? parseFloat(prod.preco_prazo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-'}</td>
               <td class="text-center">${prod.estoque ?? '-'}</td>
               <td class="text-center select-column">
               <div class="quantidade-control">
-              <input type="checkbox" class="produto-checkbox" ${selecionado ? 'checked' : ''} ${podeSelecionar ? '' : 'disabled'} aria-label="Selecionar produto ${prod.text}" />
-              <input type="text" class="form-control form-control-sm input-quantidade" value="${quantidade}" ${selecionado && podeSelecionar ? '' : 'disabled'}         aria-label="Quantidade do produto ${prod.text}" />
+                <input type="checkbox" class="produto-checkbox" ${selecionado ? 'checked' : ''} ${podeSelecionar ? '' : 'disabled'} aria-label="Selecionar produto ${nome}" />
+                <input type="text" class="form-control form-control-sm input-quantidade" value="${quantidade}" ${selecionado && podeSelecionar ? '' : 'disabled'}         aria-label="Quantidade do produto ${nome}" />
               </div>
               </td>
               </tr>
@@ -1167,7 +1186,7 @@
               return;
             }
             if (prod.quantidade > estoqueNum) {
-              showToast(`Produto "${prod.text}" não possui estoque suficiente para a quantidade ${prod.quantidade}. Ajustado para ${estoqueNum}.`, 'warning');
+                showToast(`Produto "${escapeHTML(prod.text)}" não possui estoque suficiente para a quantidade ${prod.quantidade}. Ajustado para ${estoqueNum}.`, 'warning');
               prod.quantidade = estoqueNum;
             }
 
@@ -1204,28 +1223,29 @@
         });
 
         /* --- Atualização da interface de itens --- */
-        function renderizarItensTabela() {
-          const $tbody = $(prefix + '#listaItensVenda').empty();
-          if (!itensVenda.length) {
-            $tbody.append(`<tr id="nenhumItemMsgRow"><td colspan="6" class="text-center text-muted">Nenhum item.</td></tr>`);
-            return;
-          }
-          itensVenda.forEach((item, idx) => {
-            $tbody.append(`
+          function renderizarItensTabela() {
+            const $tbody = $(prefix + '#listaItensVenda').empty();
+            if (!itensVenda.length) {
+              $tbody.append(`<tr id="nenhumItemMsgRow"><td colspan="6" class="text-center text-muted">Nenhum item.</td></tr>`);
+              return;
+            }
+            itensVenda.forEach((item, idx) => {
+              const desc = escapeHTML(item.descricao);
+              $tbody.append(`
       <tr data-id="${item.id}">
       <td>${idx + 1}</td>
-      <td>${item.descricao}</td>
+      <td>${desc}</td>
       <td class="text-center">${item.qtd}</td>
       <td class="text-end">${formatCurrency(item.preco)}</td>
       <td class="text-end">${formatCurrency(item.subtotal)}</td>
       <td class="text-center">
-      <button class="btn btn-sm btn-danger btn-remover-item" data-id="${item.id}" title="Remover item" aria-label="Remover item ${item.descricao}">
+      <button class="btn btn-sm btn-danger btn-remover-item" data-id="${item.id}" title="Remover item" aria-label="Remover item ${desc}">
       <i class="fas fa-trash-alt"></i>
       </button>
       </td>
       </tr>
       `);
-          });
+            });
         }
 
         $(prefix + '#listaItensVenda').on('click', '.btn-remover-item', function() {
