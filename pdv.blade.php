@@ -1328,6 +1328,14 @@
           parcelasPagamento = [];
           window.parcelasPagamento = parcelasPagamento;
           $(prefix + '#multiplasFormasListModal').empty();
+
+          const totalVenda = parseFloatStrict(
+            $(prefix + '#totalLiquidoValor').text().replace(/[^0-9,.-]/g, '')
+          );
+          $(prefix + '#valorFaltanteDisplay')
+            .text(formatCurrency(totalVenda))
+            .removeClass('valor-faltante-zero');
+
           adicionarNovaFormaPagamentoMultiplasModal();
         }
 
@@ -1810,6 +1818,13 @@
             }
 
             atualizarParcelasMultiplasModal();
+          });
+
+        // Botão "Cancelar" do modal: limpa os dados antes de fechar
+        $(document)
+          .off('click', prefix + '#modalMultiplasFormas button.btn-secondary[data-bs-dismiss="modal"]')
+          .on('click', prefix + '#modalMultiplasFormas button.btn-secondary[data-bs-dismiss="modal"]', function() {
+            clearFinalizacaoModal();
           });
 
 
