@@ -557,13 +557,6 @@
         </div>
         <div class="modal-body">
           Deseja gerar a Nota Fiscal Eletrônica para essa venda?
-          <div class="mt-3">
-            <label for="tipoNotaSelect" class="form-label">Tipo de Nota</label>
-            <select id="tipoNotaSelect" class="form-select">
-              <option value="nfe">NFe</option>
-              <option value="nfce">NFC-e</option>
-            </select>
-          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="btnNaoEmitirNFe" data-bs-dismiss="modal">Não</button>
@@ -674,7 +667,6 @@
         let pendingOrcamentoId = null;
         let emitirNFeEscolha = null;
         let finalizandoOrcamento = false;
-        let tipoNotaSelecionada = 'nfe';
 
 
         console.log('DEBUG: valor inicial #clienteInput2 ->', $(prefix + '#clienteInput2').val());
@@ -1582,11 +1574,9 @@
         });
 
 
-       function abrirModalConfirmarNFe() {
+        function abrirModalConfirmarNFe() {
           nfeAwaitingEmission = false;
           pendingOrcamentoId = null;
-          tipoNotaSelecionada = 'nfe';
-          $('#tipoNotaSelect').val('nfe');
           console.log('DEBUG abrirModalConfirmarNFe: preparando modal NFe');
 
           document.querySelectorAll('.modal-backdrop.show:not(.second-backdrop)').forEach(el => {
@@ -1660,13 +1650,13 @@
         }
 
 
-        function emitirNotaFiscal(orcamentoId, tipo = 'nfe') {
-          console.log('DEBUG emitirNotaFiscal: iniciando para orcamentoId=', orcamentoId, 'tipo=', tipo);
+        function emitirNotaFiscal(orcamentoId) {
+          console.log('DEBUG emitirNotaFiscal: iniciando para orcamentoId=', orcamentoId);
 
           const payloadNota = {
             orcamento_id: orcamentoId,
             ide_nNF: '',
-            ide_mod: tipo === 'nfce' ? '65' : '55',
+            ide_mod: '55',
             ide_idDest: parseInt($('#ideIdDestInput').val() || '1', 10),
             consumidor_final: parseInt($('#consumidorFinalInput').val() || '1', 10),
             consumidor_cpf: '',
@@ -1678,11 +1668,10 @@
 
           console.log('DEBUG emitirNotaFiscal - payloadNota:', payloadNota);
 
-          const urlEmitir = tipo === 'nfce'
-            ? '{{ route("orcamento.finalizar.store_emitir_notanfce") }}'
-            : '{{ route("vendas.orcamento.finalizar.store_emitir_nota") }}';
-
-          return $.post(urlEmitir, payloadNota)
+          return $.post(
+              '{{ route("vendas.orcamento.finalizar.store_emitir_nota") }}',
+              payloadNota
+            )
             .then(res4 => {
               console.log('DEBUG emitirNotaFiscal response:', res4);
               if (res4.status !== 'OK') {
@@ -2010,7 +1999,7 @@
                   'DEBUG nfeAwaitingEmission=true, iniciando emitirNotaFiscal para',
                   orcamentoId
                 );
-                emitirNotaFiscal(orcamentoId, tipoNotaSelecionada)
+                emitirNotaFiscal(orcamentoId)
                   .then(msg => {
                     console.log('DEBUG emitirNotaFiscal sucesso:', msg);
                     showToast(msg, 'success');
@@ -2046,13 +2035,11 @@
               $btn.prop('disabled', true);
 
               console.log('DEBUG btnConfirmarEmitirNFe clicado');
-              const tipoSelecionado = $('#tipoNotaSelect').val() || 'nfe';
-              tipoNotaSelecionada = tipoSelecionado;
               nfeAwaitingEmission = true;
 
               if (pendingOrcamentoId) {
                 console.log('DEBUG imediato emitirNotaFiscal para', pendingOrcamentoId);
-                emitirNotaFiscal(pendingOrcamentoId, tipoSelecionado)
+                emitirNotaFiscal(pendingOrcamentoId)
                   .then(msg => {
                     console.log('DEBUG emitirNotaFiscal sucesso:', msg);
                     showToast(msg, 'success');
@@ -2082,7 +2069,6 @@
 
               console.log('DEBUG btnNaoEmitirNFe clicado');
               nfeAwaitingEmission = false;
-              tipoNotaSelecionada = 'nfe';
               const modalNFeEl = document.getElementById('modalConfirmarNFe');
               bootstrap.Modal.getInstance(modalNFeEl).hide();
             });
