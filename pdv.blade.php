@@ -1525,7 +1525,21 @@
           const valorDisplay = document.getElementById('valorFaltanteDisplay');
           valorDisplay.textContent = 'R$ 0,00';
           valorDisplay.classList.remove('valor-faltante-zero');
+
+          ultimoAvisoParcelas = null;
+          parcelaIdCounter = 0;
+          isProcessandoFinalizacao = false;
+          isProcessandoEmissaoNFe = false;
+          finalizandoOrcamento = false;
+          pendingOrcamentoId = null;
+          nfeAwaitingEmission = false;
         }
+
+        $(prefix + '#modalMultiplasFormas')
+          .off('hidden.bs.modal.reset')
+          .on('hidden.bs.modal.reset', function () {
+            clearFinalizacaoModal();
+          });
 
         document.addEventListener('keydown', function(e) {
           const modalFinal = document.getElementById('modalMultiplasFormas');
