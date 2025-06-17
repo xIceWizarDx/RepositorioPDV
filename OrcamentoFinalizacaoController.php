@@ -67,7 +67,7 @@ class OrcamentoFinalizacaoController extends Controller
 
         $tem_preco_livre = 0;
 
-        for($i = 1; $i <= count($orcamento_itens_preco); $i++){
+        for ($i = 1; $i <= count($orcamento_itens_preco); $i++) {
 
             $caca_produtos = OrcamentoItens::where('sequencial', [$i])->where('orcamento_id', $orcamento->id)->first();
 
@@ -86,7 +86,6 @@ class OrcamentoFinalizacaoController extends Controller
             ->first();*/
 
             $tem_preco_livre += $produtos_preco->preco_indefinido + 0;
-
         }
 
         $param_finan = ParametroFinanceiro::where('empresa_id', $empresa_id)->first();
@@ -98,8 +97,8 @@ class OrcamentoFinalizacaoController extends Controller
         else
             $param_finan =  $param_finan->controle_finan;
 
-        
-        
+
+
         $validar = $this->status_empresa($empresa_id);
 
         $parcelas = OrcamentoParcela::where('orcamento_id', $orcamento->id)->get();
@@ -128,7 +127,6 @@ class OrcamentoFinalizacaoController extends Controller
                 'message' => 'Orçamento não encontrado.'
             ]);
         }
-
     }
 
     private function status_empresa($empresa_id)
@@ -137,16 +135,16 @@ class OrcamentoFinalizacaoController extends Controller
 
         $param_finan = ParametroFinanceiro::where('empresa_id', $empresa_id)->first();
 
-        if(!empty($param_finan) && ($param_finan->gastos_fixo && $param_finan->gastos_variados) > 0 ){
+        if (!empty($param_finan) && ($param_finan->gastos_fixo && $param_finan->gastos_variados) > 0) {
 
-        //Calculo para saber em qual situação a empresa da pessoa está
-        $dia_hj = date('d');
+            //Calculo para saber em qual situação a empresa da pessoa está
+            $dia_hj = date('d');
 
-        $verificar = date('t');
+            $verificar = date('t');
 
-        $mess = date('m');
+            $mess = date('m');
 
-        $total_mes = DB::connection('db_client')
+            $total_mes = DB::connection('db_client')
                 ->table('orcamentos', 'o')
                 ->where('o.empresa_id', $empresa_id)
                 ->where('o.status', 'FATURADO')
@@ -154,136 +152,125 @@ class OrcamentoFinalizacaoController extends Controller
                 ->whereRaw('DATE_FORMAT(o.dh_faturado, "%m") = ?', [$mess])
                 ->sum('o.total_liquido');
 
-        $controle_int = ($param_finan->gastos_fixo + $param_finan->gastos_variados) / $verificar; 
+            $controle_int = ($param_finan->gastos_fixo + $param_finan->gastos_variados) / $verificar;
 
-        $controle_mes = $total_mes / $dia_hj;
+            $controle_mes = $total_mes / $dia_hj;
 
-        $controle_crit = $controle_int / 2; //Se as vendas da empresa estão abaixo de 50% do recomendado por dia
+            $controle_crit = $controle_int / 2; //Se as vendas da empresa estão abaixo de 50% do recomendado por dia
 
-        //Inicio da verificação de status da empresa
-        if($verificar == 31){
+            //Inicio da verificação de status da empresa
+            if ($verificar == 31) {
 
-            if($dia_hj < 5){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 5 && $dia_hj < 10)){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 10 && $dia_hj < 15)){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 15 && $dia_hj < 20)){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 20 && $dia_hj < 25)){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 25 && $dia_hj < 31)){
-                $status = 'Controlado';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 5 && $dia_hj < 10)){
-                $status = 'Crítico';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 10 && $dia_hj < 15)){
-                $status = 'Crítico';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 15 && $dia_hj < 20)){
-                $status = 'Crítico';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 20 && $dia_hj < 25)){
-                $status = 'Crítico';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 25 && $dia_hj < 31)){
-                $status = 'Crítico';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 5 && $dia_hj < 10)){
-                $status = 'Alerta';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 10 && $dia_hj < 15)){
-                $status = 'Alerta';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 15 && $dia_hj < 20)){
-                $status = 'Alerta';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 20 && $dia_hj < 25)){
-                $status = 'Alerta';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 25 && $dia_hj < 31)){
-                $status = 'Alerta';
+                if ($dia_hj < 5) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 5 && $dia_hj < 10)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 10 && $dia_hj < 15)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 15 && $dia_hj < 20)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 20 && $dia_hj < 25)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 25 && $dia_hj < 31)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 5 && $dia_hj < 10)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 10 && $dia_hj < 15)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 15 && $dia_hj < 20)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 20 && $dia_hj < 25)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 25 && $dia_hj < 31)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 5 && $dia_hj < 10)) {
+                    $status = 'Alerta';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 10 && $dia_hj < 15)) {
+                    $status = 'Alerta';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 15 && $dia_hj < 20)) {
+                    $status = 'Alerta';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 20 && $dia_hj < 25)) {
+                    $status = 'Alerta';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 25 && $dia_hj < 31)) {
+                    $status = 'Alerta';
+                }
+            } else if ($verificar == 30) {
+
+                if ($dia_hj < 5) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 5 && $dia_hj < 10)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 10 && $dia_hj < 15)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 15 && $dia_hj < 20)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 20 && $dia_hj < 25)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 25 && $dia_hj < 30)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 5 && $dia_hj < 10)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 10 && $dia_hj < 15)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 15 && $dia_hj < 20)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 20 && $dia_hj < 25)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 25 && $dia_hj < 30)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 5 && $dia_hj < 10)) {
+                    $status = 'Alerta';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 10 && $dia_hj < 15)) {
+                    $status = 'Alerta';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 15 && $dia_hj < 20)) {
+                    $status = 'Alerta';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 20 && $dia_hj < 25)) {
+                    $status = 'Alerta';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 25 && $dia_hj < 30)) {
+                    $status = 'Alerta';
+                }
+            } else if ($verificar == 28) {
+
+                if ($dia_hj < 5) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 5 && $dia_hj < 10)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 10 && $dia_hj < 15)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 15 && $dia_hj < 20)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 20 && $dia_hj < 25)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes >= $controle_int && $dia_hj >= 25 && $dia_hj < 28)) {
+                    $status = 'Controlado';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 5 && $dia_hj < 10)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 10 && $dia_hj < 15)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 15 && $dia_hj < 20)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 20 && $dia_hj < 25)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes <= $controle_crit && $dia_hj >= 25 && $dia_hj < 28)) {
+                    $status = 'Crítico';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 5 && $dia_hj < 10)) {
+                    $status = 'Alerta';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 10 && $dia_hj < 15)) {
+                    $status = 'Alerta';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 15 && $dia_hj < 20)) {
+                    $status = 'Alerta';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 20 && $dia_hj < 25)) {
+                    $status = 'Alerta';
+                } else if (($controle_mes < $controle_int && $dia_hj >= 25 && $dia_hj < 28)) {
+                    $status = 'Alerta';
+                }
             }
+        } else {
 
-            
-           
-        }else if($verificar == 30){
-
-            if($dia_hj < 5){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 5 && $dia_hj < 10)){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 10 && $dia_hj < 15)){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 15 && $dia_hj < 20)){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 20 && $dia_hj < 25)){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 25 && $dia_hj < 30)){
-                $status = 'Controlado';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 5 && $dia_hj < 10)){
-                $status = 'Crítico';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 10 && $dia_hj < 15)){
-                $status = 'Crítico';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 15 && $dia_hj < 20)){
-                $status = 'Crítico';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 20 && $dia_hj < 25)){
-                $status = 'Crítico';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 25 && $dia_hj < 30)){
-                $status = 'Crítico';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 5 && $dia_hj < 10)){
-                $status = 'Alerta';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 10 && $dia_hj < 15)){
-                $status = 'Alerta';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 15 && $dia_hj < 20)){
-                $status = 'Alerta';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 20 && $dia_hj < 25)){
-                $status = 'Alerta';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 25 && $dia_hj < 30)){
-                $status = 'Alerta';
-            }
-
-            
-           
-        }else if($verificar == 28){
-
-            if($dia_hj < 5){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 5 && $dia_hj < 10)){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 10 && $dia_hj < 15)){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 15 && $dia_hj < 20)){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 20 && $dia_hj < 25)){
-                $status = 'Controlado';
-            }else if(($controle_mes >= $controle_int && $dia_hj >= 25 && $dia_hj < 28)){
-                $status = 'Controlado';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 5 && $dia_hj < 10)){
-                $status = 'Crítico';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 10 && $dia_hj < 15)){
-                $status = 'Crítico';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 15 && $dia_hj < 20)){
-                $status = 'Crítico';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 20 && $dia_hj < 25)){
-                $status = 'Crítico';
-            }else if(($controle_mes <= $controle_crit && $dia_hj >= 25 && $dia_hj < 28)){
-                $status = 'Crítico';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 5 && $dia_hj < 10)){
-                $status = 'Alerta';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 10 && $dia_hj < 15)){
-                $status = 'Alerta';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 15 && $dia_hj < 20)){
-                $status = 'Alerta';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 20 && $dia_hj < 25)){
-                $status = 'Alerta';
-            }else if(($controle_mes < $controle_int && $dia_hj >= 25 && $dia_hj < 28)){
-                $status = 'Alerta';
-            }
-
-            
+            $status = 'Controlado';
         }
 
-    }else{
-
-        $status = 'Controlado';
-
-    }
-        
         return $status;
-
     }
 
     public function oque_fazer(Request $request)
@@ -299,14 +286,14 @@ class OrcamentoFinalizacaoController extends Controller
             ->first();
 
         $parcelas = OrcamentoParcela::where('orcamento_id', $orcamento->id)
-            ->get();  
-            
-        $contas = ContasBancos::where('conta_padrao', 1)->first();    
-            
-        
-        if(empty($contas)){
+            ->get();
+
+        $contas = ContasBancos::where('conta_padrao', 1)->first();
+
+
+        if (empty($contas)) {
             $tem_conta = 0;
-        }else{
+        } else {
             $tem_conta = 1;
         }
 
@@ -314,12 +301,12 @@ class OrcamentoFinalizacaoController extends Controller
         //VERIFICA SE TEM PAGAMENTO EM TRANSFERENCIA BANCARIA
         $final = OrcamentoParcela::where('forma_pagamento_id', 'TRA')->where('orcamento_id', $orcamento->id)->get();
 
-        if(count($final) > 0){
+        if (count($final) > 0) {
             $aparece = 1;
-        }else{
+        } else {
             $aparece = 0;
         }
-            
+
 
         $formas_pagamentos = FormaPagamento::orderBy('sequencial', 'asc')->where('is_active', '>', 0)->get();
 
@@ -341,7 +328,6 @@ class OrcamentoFinalizacaoController extends Controller
                 'message' => 'Orçamento não encontrado.'
             ]);
         }
-
     }
 
     public function clicou_faturou(Orcamento $orcamento, Request $request)
@@ -365,7 +351,7 @@ class OrcamentoFinalizacaoController extends Controller
 
         // SE EXISTE NOTA ABERTA
         $nota = NFeNFCe::where('empresa_id', $empresa_id)
-            ->where('orcamento_id',$orcamento->id)
+            ->where('orcamento_id', $orcamento->id)
             ->where('is_transmitido', 0)
             ->where('is_cancelado', 0)
             ->first();
@@ -373,15 +359,14 @@ class OrcamentoFinalizacaoController extends Controller
         return response()->json([
             'status' => 'OK',
             'data' => view('venda.orcamento_finalizar.clicou_faturou')
-                    ->with('orcamento', $orcamento)
-                    ->with('finalizacao', $finalizacao)
-                    ->with('parcelas', $parcelas)
-                    ->with('formas_pagamentos', $formas_pagamentos)
-                    ->with('nota', $nota)
-                    ->with('perfis', $perfis)
+                ->with('orcamento', $orcamento)
+                ->with('finalizacao', $finalizacao)
+                ->with('parcelas', $parcelas)
+                ->with('formas_pagamentos', $formas_pagamentos)
+                ->with('nota', $nota)
+                ->with('perfis', $perfis)
                 ->render()
         ]);
-
     }
 
     /**
@@ -398,18 +383,18 @@ class OrcamentoFinalizacaoController extends Controller
 
         $mod_pagar = FormaPagamento::where('sequencial', $fields['forma'])->first();
 
-        if(empty($mod_pagar)){
+        if (empty($mod_pagar)) {
             $mod_pagar = FormaPagamento::where('id', $fields['fpgto'])->first();
-        }else{
+        } else {
             $mod_pagar = FormaPagamento::where('sequencial', $fields['forma'])->first();
         }
-        
+
 
         if ($mod_pagar->livre_pag > 0 && $mod_pagar->is_active > 0) {
 
-           $modo_forms = ModoPagar::where('descricao_id', $mod_pagar->id)->first();
+            $modo_forms = ModoPagar::where('descricao_id', $mod_pagar->id)->first();
 
-            if (!empty($modo_forms)){
+            if (!empty($modo_forms)) {
                 $modo = ModoPagar::where('descricao_id', $mod_pagar->id)->get('pag_mod');
                 $modo_forms_id = ModoPagar::where('descricao_id', $mod_pagar->id)->get('descricao_id');
 
@@ -417,7 +402,7 @@ class OrcamentoFinalizacaoController extends Controller
                 $form_pag = $modo;
                 $modo_forms_id = $modo_forms_id;
                 $passou = 'OK';
-            }else{
+            } else {
                 $mod_pagar = $mod_pagar->id;
                 $form_pag = '';
                 $modo_forms_id = '';
@@ -431,23 +416,21 @@ class OrcamentoFinalizacaoController extends Controller
                 'passou' => $passou,
                 'data' => 'Nenhuma condição cadastrada para a forma de pagamento. Desative o pagamento livre ou adicione uma ou mais formas!'
             ]);
-
         } else {
 
             $modo_forms_vere = ModoPagar::where('descricao_id', $mod_pagar->id)->first();
 
-            if (empty($modo_forms_vere) && $mod_pagar->is_active < 1){
-            $mod_pagar = $mod_pagar->id;
-            $form_pag = '';
-            $modo_forms_id = '';
-            $passou = 'NOK3';
-
-            }else{
-            $mod_pagar = $mod_pagar->id;
-            $form_pag = '';
-            $modo_forms_id = '';
-            $passou = 'NOK';
-            }    
+            if (empty($modo_forms_vere) && $mod_pagar->is_active < 1) {
+                $mod_pagar = $mod_pagar->id;
+                $form_pag = '';
+                $modo_forms_id = '';
+                $passou = 'NOK3';
+            } else {
+                $mod_pagar = $mod_pagar->id;
+                $form_pag = '';
+                $modo_forms_id = '';
+                $passou = 'NOK';
+            }
 
             return response()->json([
                 'mod_pagar' => $mod_pagar,
@@ -455,11 +438,8 @@ class OrcamentoFinalizacaoController extends Controller
                 'passou' => $passou,
                 'data' => 'Forma de pagamento não está ativa, por favor escolha outra ou ative a mesma.'
             ]);
-
         }
-
-
-    } 
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -474,18 +454,18 @@ class OrcamentoFinalizacaoController extends Controller
         $empresa_id = intval(\Illuminate\Support\Facades\Request::session()->get('empresa')['id']);
         $param = ParametroPorUsuario::where('user_id', auth()->id())->first();
         $perfis = PerfilFiscal::where('empresa_id', $empresa_id)->where('is_padrao', '>', 0)->first();
-        $orcamento_id = intval($request->input('orcamento_id')); 
+        $orcamento_id = intval($request->input('orcamento_id'));
 
         $nNF = NFeNFCe::where('empresa_id', $empresa_id)
             ->where('ide_mod', 65)
             ->where('ide_serie', $param->fiscal_serie_nota)
             ->max('ide_nNF');
 
-            if (empty($nNF)) {
-                $nNF = 1;
-            } else {
-                $nNF = intval($nNF) + 1;
-            }   
+        if (empty($nNF)) {
+            $nNF = 1;
+        } else {
+            $nNF = intval($nNF) + 1;
+        }
 
         $perfil_fiscal_id = $perfis->id;
         $mod = 65; //Emissão de NF-e, por isso o codigo é 55.
@@ -502,58 +482,58 @@ class OrcamentoFinalizacaoController extends Controller
         $total_seguro = $request->input('total_seguro');
         $total_outros = $request->input('total_outros');
 
-        $total_frete = !empty($total_frete) ? str_replace(['.',','], ['','.'], $total_frete) : 0;
-        $total_seguro = !empty($total_seguro) ? str_replace(['.',','], ['','.'], $total_seguro) : 0;
-        $total_outros = !empty($total_outros) ? str_replace(['.',','], ['','.'], $total_outros) : 0;
+        $total_frete = !empty($total_frete) ? str_replace(['.', ','], ['', '.'], $total_frete) : 0;
+        $total_seguro = !empty($total_seguro) ? str_replace(['.', ','], ['', '.'], $total_seguro) : 0;
+        $total_outros = !empty($total_outros) ? str_replace(['.', ','], ['', '.'], $total_outros) : 0;
 
         // VALIDACOES
-        if (empty($mod)){
+        if (empty($mod)) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Selecione o TIPO DE DOCUMENTO'
             ]);
         }
-        if (empty($numero_nota)){
+        if (empty($numero_nota)) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'É necessário um numero de nota fiscal'
             ]);
         }
-        if (!empty($consumidor_cpf)){
-            $consumidor_cpf = str_replace(['.','-'],'', $consumidor_cpf);
+        if (!empty($consumidor_cpf)) {
+            $consumidor_cpf = str_replace(['.', '-'], '', $consumidor_cpf);
         }
 
         // VALIDAR A SERIE
         $param = ParametroPorUsuario::where('user_id', auth()->id())->first();
-        if (empty($param)){
+        if (empty($param)) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Acesse parametros -> fiscal e defina a série ( obs. coloque 0 caso não houver nenhum )'
             ]);
-        }else if (trim($param->fiscal_serie_nota) == ''){
+        } else if (trim($param->fiscal_serie_nota) == '') {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Acesse parametros -> fiscal e defina a série ( obs. coloque 0 caso não houver nenhum )'
             ]);
-        }else{
+        } else {
             $serie = $param->fiscal_serie_nota;
         }
 
         // ORCAMENTO
         $orcamento = Orcamento::where('id', $orcamento_id)->first();
-        if (empty($orcamento)){
+        if (empty($orcamento)) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Não foi possível encontrar o orçamento em nossa base de dados'
             ]);
         }
-        if ($orcamento->status != 'FATURADO'){
+        if ($orcamento->status != 'FATURADO') {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Só é possível emitir nota fiscal com orçamento faturado'
             ]);
         }
-        if ($orcamento->tipo_movimento_id != 1){
+        if ($orcamento->tipo_movimento_id != 1) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Só é possível emitir nota fiscal com vendas'
@@ -564,7 +544,7 @@ class OrcamentoFinalizacaoController extends Controller
         $orcamento_itens = OrcamentoItens::where('orcamento_id', $orcamento->id)
             ->get();
 
-        $orcamento_itens_quant = $orcamento_itens->count();    
+        $orcamento_itens_quant = $orcamento_itens->count();
 
         if (count($orcamento_itens) <= 0) {
             return response()->json([
@@ -574,7 +554,7 @@ class OrcamentoFinalizacaoController extends Controller
         }
 
         $perfil = PerfilFiscal::where('id', $perfil_fiscal_id)->first();
-        if (empty($perfil)){
+        if (empty($perfil)) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Não foi possível encontrar em nossa base de dados'
@@ -582,7 +562,7 @@ class OrcamentoFinalizacaoController extends Controller
         }
 
         $natureza_operacao = NaturezaOperacao::where('id', $natureza_operacao_id)->first();
-        if (empty($natureza_operacao)){
+        if (empty($natureza_operacao)) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Não foi possível encontrar em nossa base de dados'
@@ -606,7 +586,7 @@ class OrcamentoFinalizacaoController extends Controller
         $nf['fiscal_perfil_id'] = $perfil_fiscal_id;
         $nf['fiscal_natureza_operacao_id'] = $natureza_operacao_id;
         $nf['ide_cUF'] = $orcamento->empresa->cidade->estado_id;
-        $nf['ide_cNF'] = $numero_nota + 1;//mt_rand(11111111,99999999);
+        $nf['ide_cNF'] = $numero_nota + 1; //mt_rand(11111111,99999999);
         $nf['ide_natOp'] = Helper::sanitizeString($natureza_operacao);
         $nf['ide_indPag'] = $this->isAVista($orcamento->id) ? 0 : 1;
         $nf['ide_mod'] = $mod;
@@ -652,7 +632,7 @@ class OrcamentoFinalizacaoController extends Controller
         $nf['emi_CRT'] = $perfil->crt_id;
 
         // DESTINATARIO
-        if ($mod == 55){
+        if ($mod == 55) {
             $nf['dest_cpf_cnpj'] = $orcamento->cliente->cpf_cnpj;
             $nf['dest_xNome'] = !empty($orcamento->cliente->nome_razao) ? Helper::sanitizeString($orcamento->cliente->nome_razao) : null;
             $nf['dest_xLgr'] = Helper::sanitizeString($orcamento->cliente->endereco);
@@ -700,13 +680,13 @@ class OrcamentoFinalizacaoController extends Controller
             $nf_updated = false;
             if (empty($fiscal_nf)) {
                 $nf_created = NFeNFCe::create($nf);
-            }else{
+            } else {
                 $nf_updated = $fiscal_nf->update($nf);
             }
 
-            if (!empty($nf_created) || $nf_updated){
+            if (!empty($nf_created) || $nf_updated) {
 
-                if ($nf_updated){
+                if ($nf_updated) {
                     $nf_created = NFeNFCe::find($fiscal_nf->id);
                 }
 
@@ -723,7 +703,7 @@ class OrcamentoFinalizacaoController extends Controller
                 NFeNFCeItens::where('nf_id', $nf_created->id)->delete();
 
 
-                foreach ($orcamento_itens as $item){
+                foreach ($orcamento_itens as $item) {
 
                     $produto = Produto::find($item->produto_id);
 
@@ -736,9 +716,9 @@ class OrcamentoFinalizacaoController extends Controller
                     $nf_item['produto_id'] = $produto->id;
                     $nf_item['nItem'] = $item->sequencial;
                     $nf_item['cProd'] = $produto->id;
-                    if (empty($produto->cEAN)){
+                    if (empty($produto->cEAN)) {
                         $nf_item['cEAN'] = 'SEM GTIN';
-                    }else{
+                    } else {
                         if (GTIN::validate($produto->cEAN))
                             $nf_item['cEAN'] = $produto->cEAN;
                         else
@@ -755,29 +735,29 @@ class OrcamentoFinalizacaoController extends Controller
                     $nf_item['uCom'] = $produto->unidadeComercial->sigla;
                     $nf_item['qCom'] = $item->quantidade;
                     $nf_item['vUnCom'] = $item->preco;
-                    $nf_item['vProd'] = number_format($item->quantidade * $item->preco,2,'.','');
+                    $nf_item['vProd'] = number_format($item->quantidade * $item->preco, 2, '.', '');
                     if (empty($produto->cEANTrib)) {
-                        if (!empty($produto->cEAN)){
+                        if (!empty($produto->cEAN)) {
                             if (GTIN::validate($produto->cEAN))
                                 $nf_item['cEANTrib'] = $produto->cEAN;
                             else
                                 $nf_item['cEANTrib'] = null;
-                        }else{
+                        } else {
                             $nf_item['cEANTrib'] = null;
                         }
-                    }else{
-                        if(GTIN::validate($produto->cEANTrib))
+                    } else {
+                        if (GTIN::validate($produto->cEANTrib))
                             $nf_item['cEANTrib'] = $produto->cEANTrib;
                         else
                             $nf_item['cEANTrib'] = null;
                     }
                     $nf_item['uTrib'] = $produto->unidadeTributada->sigla;
-                    $nf_item['qTrib'] = number_format($item->quantidade * $produto->qTrib,2,'.','');
+                    $nf_item['qTrib'] = number_format($item->quantidade * $produto->qTrib, 2, '.', '');
                     $nf_item['vUnTrib'] = $nf_item['vProd'] / $nf_item['qTrib'];
 
                     $nf_item['vDesc'] = $item->desconto;
 
-                    $nf_item['vFrete'] = number_format($total_frete / $orcamento_itens_quant,2,'.','');
+                    $nf_item['vFrete'] = number_format($total_frete / $orcamento_itens_quant, 2, '.', '');
                     $nf_item['vSeg'] = 0;
                     $nf_item['vOutro'] = 0;
 
@@ -794,10 +774,10 @@ class OrcamentoFinalizacaoController extends Controller
                     $nf_item['pRedBC'] = empty($perfil->aliq_red_bc) ? 0 : $perfil->aliq_red_bc;
                     $nf_item['pICMS'] = empty($perfil->aliq_icms) ? 0 : $perfil->aliq_icms;
 
-                    if (!empty($ibptax)){
+                    if (!empty($ibptax)) {
                         $nf_item['pTribEst'] = $ibptax->aliq_estadual;
                         $nf_item['pTribFed'] = $ibptax->aliq_nacional;
-                    }else{
+                    } else {
                         $nf_item['pTribEst'] = 0;
                         $nf_item['pTribFed'] = 0;
                     }
@@ -817,16 +797,14 @@ class OrcamentoFinalizacaoController extends Controller
 
                         $item_created = NFeNFCeItens::create($nf_item);
 
-                        if (empty($item_created)){
+                        if (empty($item_created)) {
                             DB::rollBack();
                             break;
                         }
-
-                    }catch (\Exception $e){
+                    } catch (\Exception $e) {
                         DB::rollBack();
                         break;
                     }
-
                 }
 
                 DB::commit();
@@ -850,8 +828,8 @@ class OrcamentoFinalizacaoController extends Controller
                     ];
 
                     $curl = ApiFiscal::getCurl(
-                       '/fiscal/gerar_nota',
-                       'POST',
+                        '/fiscal/gerar_nota',
+                        'POST',
                         $content
                     );
 
@@ -861,7 +839,7 @@ class OrcamentoFinalizacaoController extends Controller
 
                     $response = json_decode($response, true);
 
-                    if ($response['status'] == 'OK'){
+                    if ($response['status'] == 'OK') {
 
                         // ATUALIZA TRANSMITIDO
                         $row = [];
@@ -884,22 +862,21 @@ class OrcamentoFinalizacaoController extends Controller
                             return response()->json([
                                 'status' => 'OK',
                                 'nf_id' => $nf_created->id,
-                                'data' => 'Sua NFC-e '. $nf_created->ide_nNF . ' foi criada com sucesso!'
+                                'data' => 'Sua NFC-e ' . $nf_created->ide_nNF . ' foi criada com sucesso!'
                             ]);
-                        }else{
+                        } else {
                             return response()->json([
                                 'status' => 'NOK',
                                 'data' => 'Houve algum problema ao atualizar com o retorno da nota fiscal.'
                             ]);
                         }
-                    }else{
+                    } else {
                         return response()->json([
                             'status' => 'NOK',
                             'data' => $response['message']
                         ]);
                     }
-
-                }else{
+                } else {
                     return response()->json([
                         'status' => 'NOK',
                         'data' => 'Acesse parametros->fiscal'
@@ -910,23 +887,18 @@ class OrcamentoFinalizacaoController extends Controller
                     'status' => 'OK',
                     'data' => 'XML Gerado com sucesso.'
                 ]);
-
-            }else{
+            } else {
                 DB::rollBack();
                 return response()->json([
                     'status' => 'NOK',
                     'data' => 'XML da nota fiscal não foi gerado'
                 ]);
             }
-
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
             return Helper::msg_nok($e->getMessage());
         }
-
-
-
-    } 
+    }
 
     public function store_emitir_nota(Request $request)
     {
@@ -943,18 +915,18 @@ class OrcamentoFinalizacaoController extends Controller
             ->where('ide_serie', $param->fiscal_serie_nota)
             ->max('ide_nNF');
 
-            if (empty($nNF)) {
-                $nNF = 1;
-            } else {
-                $nNF = intval($nNF) + 1;
-            }  
+        if (empty($nNF)) {
+            $nNF = 1;
+        } else {
+            $nNF = intval($nNF) + 1;
+        }
 
 
 
         $numero_nota = $nNF;
         $consumidor_final = !empty($request->boolean('consumidor_final')) ? (int)$request->boolean('consumidor_final') : 0;
         $ide_idDest = !empty($request->boolean('ide_idDest')) ? $request->boolean('ide_idDest') : 0;
-        
+
         $obs_fiscal_novo = $request->input('gerarxml_obs');
 
         $finalizade_id = 1;
@@ -969,69 +941,69 @@ class OrcamentoFinalizacaoController extends Controller
         $total_seguro = $request->input('total_seguro');
         $total_outros = $request->input('total_outros');
 
-        $total_frete = !empty($total_frete) ? str_replace(['.',','], ['','.'], $total_frete) : 0;
-        $total_seguro = !empty($total_seguro) ? str_replace(['.',','], ['','.'], $total_seguro) : 0;
-        $total_outros = !empty($total_outros) ? str_replace(['.',','], ['','.'], $total_outros) : 0;
+        $total_frete = !empty($total_frete) ? str_replace(['.', ','], ['', '.'], $total_frete) : 0;
+        $total_seguro = !empty($total_seguro) ? str_replace(['.', ','], ['', '.'], $total_seguro) : 0;
+        $total_outros = !empty($total_outros) ? str_replace(['.', ','], ['', '.'], $total_outros) : 0;
 
-        if($finalizade_id == '4' || $finalizade_id == '2' || $finalizade_id == '3'){
-        $nf_nu = NFeNFCe::where('id', $nf_referenciada)->first();
-        $nf_nu_final = $nf_nu->chave;
+        if ($finalizade_id == '4' || $finalizade_id == '2' || $finalizade_id == '3') {
+            $nf_nu = NFeNFCe::where('id', $nf_referenciada)->first();
+            $nf_nu_final = $nf_nu->chave;
         }
 
         // VALIDACOES
-        if (empty($mod)){
+        if (empty($mod)) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Selecione o TIPO DE DOCUMENTO'
             ]);
         }
-        if (empty($numero_nota)){
+        if (empty($numero_nota)) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'É necessário um numero de nota fiscal'
             ]);
         }
-        if (empty($nf_referenciada) && ($finalizade_id == '4' || $finalizade_id == '2' || $finalizade_id == '3')){
+        if (empty($nf_referenciada) && ($finalizade_id == '4' || $finalizade_id == '2' || $finalizade_id == '3')) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'É necessário um numero de nota fiscal'
             ]);
         }
-        if (!empty($consumidor_cpf)){
-            $consumidor_cpf = str_replace(['.','-','/'],'', $consumidor_cpf);
+        if (!empty($consumidor_cpf)) {
+            $consumidor_cpf = str_replace(['.', '-', '/'], '', $consumidor_cpf);
         }
 
         // VALIDAR A SERIE
         $param = ParametroPorUsuario::where('user_id', auth()->id())->first();
-        if (empty($param)){
+        if (empty($param)) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Acesse parametros -> fiscal e defina a série ( obs. coloque 0 caso não houver nenhum )'
             ]);
-        }else if (trim($param->fiscal_serie_nota) == ''){
+        } else if (trim($param->fiscal_serie_nota) == '') {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Acesse parametros -> fiscal e defina a série ( obs. coloque 0 caso não houver nenhum )'
             ]);
-        }else{
+        } else {
             $serie = $param->fiscal_serie_nota;
         }
 
         // ORCAMENTO
         $orcamento = Orcamento::find($orcamento_id);
-        if (empty($orcamento)){
+        if (empty($orcamento)) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Não foi possível encontrar o orçamento em nossa base de dados'
             ]);
         }
-        if ($orcamento->status != 'FATURADO'){
+        if ($orcamento->status != 'FATURADO') {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Só é possível emitir nota fiscal com orçamento faturado'
             ]);
         }
-        if ($orcamento->tipo_movimento_id != 1){
+        if ($orcamento->tipo_movimento_id != 1) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Só é possível emitir nota fiscal com vendas'
@@ -1042,7 +1014,7 @@ class OrcamentoFinalizacaoController extends Controller
         $orcamento_itens = OrcamentoItens::where('orcamento_id', $orcamento->id)
             ->get();
 
-        $orcamento_itens_quant = $orcamento_itens->count();    
+        $orcamento_itens_quant = $orcamento_itens->count();
 
         if (count($orcamento_itens) <= 0) {
             return response()->json([
@@ -1052,7 +1024,7 @@ class OrcamentoFinalizacaoController extends Controller
         }
 
         $perfil = PerfilFiscal::find($perfil_fiscal_id);
-        if (empty($perfil)){
+        if (empty($perfil)) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Não foi possível encontrar em nossa base de dados'
@@ -1060,7 +1032,7 @@ class OrcamentoFinalizacaoController extends Controller
         }
 
         $natureza_operacao = NaturezaOperacao::find($natureza_operacao_id);
-        if (empty($natureza_operacao)){
+        if (empty($natureza_operacao)) {
             return response()->json([
                 'status' => 'NOK',
                 'data' => 'Não foi possível encontrar em nossa base de dados'
@@ -1104,7 +1076,7 @@ class OrcamentoFinalizacaoController extends Controller
         $nf['fiscal_perfil_id'] = $perfil_fiscal_id;
         $nf['fiscal_natureza_operacao_id'] = $natureza_operacao_id;
         $nf['ide_cUF'] = $orcamento->empresa->cidade->estado_id;
-        $nf['ide_cNF'] = $numero_nota + 1;//mt_rand(11111111,99999999);
+        $nf['ide_cNF'] = $numero_nota + 1; //mt_rand(11111111,99999999);
         $nf['ide_natOp'] = Helper::sanitizeString($natureza_operacao);
         $nf['ide_indPag'] = $this->isAVista($orcamento->id) ? 0 : 1;
         $nf['ide_mod'] = $mod;
@@ -1151,7 +1123,7 @@ class OrcamentoFinalizacaoController extends Controller
         $nf['emi_CRT'] = $perfil->crt_id;
 
         // DESTINATARIO
-        if ($mod == 55){
+        if ($mod == 55) {
             $nf['dest_cpf_cnpj'] = $orcamento->cliente->cpf_cnpj;
             $nf['dest_xNome'] = !empty($orcamento->cliente->nome_razao) ? Helper::sanitizeString($orcamento->cliente->nome_razao) : null;
             $nf['dest_xLgr'] = Helper::sanitizeString($orcamento->cliente->endereco);
@@ -1187,28 +1159,28 @@ class OrcamentoFinalizacaoController extends Controller
         $nf['user_idCreated'] = auth()->id();
         $nf['user_idUpdated'] = auth()->id();
 
-        if(!empty($obs_fiscal_novo)){
-        $nf['obs_fiscal'] = $request->input('gerarxml_obs');
-        }else{
-                $obs_fiscal = ObsFiscal::where('empresa_id', $empresa_id)->first();
-                if(!empty($obs_fiscal)){
+        if (!empty($obs_fiscal_novo)) {
+            $nf['obs_fiscal'] = $request->input('gerarxml_obs');
+        } else {
+            $obs_fiscal = ObsFiscal::where('empresa_id', $empresa_id)->first();
+            if (!empty($obs_fiscal)) {
                 $nf['obs_fiscal'] = $obs_fiscal->obs;
-                }else{
+            } else {
                 $nf['obs_fiscal'] = '';
-                }
+            }
         }
 
         $nf['obs_orcamento'] = !empty($orcamento->observacao) ? $orcamento->observacao : null;
 
-    
+
         //Gera todas as informações para enviar a API fiscal a respeito do frete
         $info_frete = [];
-            $info_frete['nome_razao']  = '';
-            $info_frete['endereco']  = '';
-            $info_frete['municipio']  = '';
-            $info_frete['uf']  = '';
-            $info_frete['cnpj_cpf']  = '';
-            $info_frete['ie']  = '';
+        $info_frete['nome_razao']  = '';
+        $info_frete['endereco']  = '';
+        $info_frete['municipio']  = '';
+        $info_frete['uf']  = '';
+        $info_frete['cnpj_cpf']  = '';
+        $info_frete['ie']  = '';
 
 
 
@@ -1218,13 +1190,13 @@ class OrcamentoFinalizacaoController extends Controller
             $nf_updated = false;
             if (empty($fiscal_nf)) {
                 $nf_created = NFeNFCe::create($nf);
-            }else{
+            } else {
                 $nf_updated = $fiscal_nf->update($nf);
             }
 
-            if (!empty($nf_created) || $nf_updated){
+            if (!empty($nf_created) || $nf_updated) {
 
-                if ($nf_updated){
+                if ($nf_updated) {
                     $nf_created = NFeNFCe::find($fiscal_nf->id);
                 }
 
@@ -1241,7 +1213,7 @@ class OrcamentoFinalizacaoController extends Controller
                 NFeNFCeItens::where('nf_id', $nf_created->id)->delete();
 
 
-                foreach ($orcamento_itens as $item){
+                foreach ($orcamento_itens as $item) {
 
                     $produto = Produto::find($item->produto_id);
 
@@ -1254,9 +1226,9 @@ class OrcamentoFinalizacaoController extends Controller
                     $nf_item['produto_id'] = $produto->id;
                     $nf_item['nItem'] = $item->sequencial;
                     $nf_item['cProd'] = $produto->id;
-                    if (empty($produto->cEAN)){
+                    if (empty($produto->cEAN)) {
                         $nf_item['cEAN'] = 'SEM GTIN';
-                    }else{
+                    } else {
                         if (GTIN::validate($produto->cEAN))
                             $nf_item['cEAN'] = $produto->cEAN;
                         else
@@ -1273,31 +1245,31 @@ class OrcamentoFinalizacaoController extends Controller
                     $nf_item['uCom'] = $produto->unidadeComercial->sigla;
                     $nf_item['qCom'] = $item->quantidade;
                     $nf_item['vUnCom'] = $item->preco;
-                    $nf_item['vProd'] = number_format($item->quantidade * $item->preco,2,'.','');
+                    $nf_item['vProd'] = number_format($item->quantidade * $item->preco, 2, '.', '');
                     if (empty($produto->cEANTrib)) {
-                        if (!empty($produto->cEAN)){
+                        if (!empty($produto->cEAN)) {
                             if (GTIN::validate($produto->cEAN))
                                 $nf_item['cEANTrib'] = $produto->cEAN;
                             else
                                 $nf_item['cEANTrib'] = null;
-                        }else{
+                        } else {
                             $nf_item['cEANTrib'] = null;
                         }
-                    }else{
-                        if(GTIN::validate($produto->cEANTrib))
+                    } else {
+                        if (GTIN::validate($produto->cEANTrib))
                             $nf_item['cEANTrib'] = $produto->cEANTrib;
                         else
                             $nf_item['cEANTrib'] = null;
                     }
                     $nf_item['uTrib'] = $produto->unidadeTributada->sigla;
-                    $nf_item['qTrib'] = number_format($item->quantidade * $produto->qTrib,2,'.','');
+                    $nf_item['qTrib'] = number_format($item->quantidade * $produto->qTrib, 2, '.', '');
                     $nf_item['vUnTrib'] = $nf_item['vProd'] / $nf_item['qTrib'];
 
                     $nf_item['vDesc'] = $item->desconto;
 
-                    $nf_item['vFrete'] = number_format($total_frete / $orcamento_itens_quant,2,'.','');
-                    $nf_item['vSeg'] = number_format($total_seguro / $orcamento_itens_quant,2,'.','');
-                    $nf_item['vOutro'] = number_format($total_outros / $orcamento_itens_quant,2,'.','');
+                    $nf_item['vFrete'] = number_format($total_frete / $orcamento_itens_quant, 2, '.', '');
+                    $nf_item['vSeg'] = number_format($total_seguro / $orcamento_itens_quant, 2, '.', '');
+                    $nf_item['vOutro'] = number_format($total_outros / $orcamento_itens_quant, 2, '.', '');
 
                     $nf_item['indTot'] = 1;
                     $nf_item['orig'] = $perfil->st_origem_id;
@@ -1312,10 +1284,10 @@ class OrcamentoFinalizacaoController extends Controller
                     $nf_item['pRedBC'] = empty($perfil->aliq_red_bc) ? 0 : $perfil->aliq_red_bc;
                     $nf_item['pICMS'] = empty($perfil->aliq_icms) ? 0 : $perfil->aliq_icms;
 
-                    if (!empty($ibptax)){
+                    if (!empty($ibptax)) {
                         $nf_item['pTribEst'] = $ibptax->aliq_estadual;
                         $nf_item['pTribFed'] = $ibptax->aliq_nacional;
-                    }else{
+                    } else {
                         $nf_item['pTribEst'] = 0;
                         $nf_item['pTribFed'] = 0;
                     }
@@ -1335,16 +1307,14 @@ class OrcamentoFinalizacaoController extends Controller
 
                         $item_created = NFeNFCeItens::create($nf_item);
 
-                        if (empty($item_created)){
+                        if (empty($item_created)) {
                             DB::rollBack();
                             break;
                         }
-
-                    }catch (\Exception $e){
+                    } catch (\Exception $e) {
                         DB::rollBack();
                         break;
                     }
-
                 }
 
                 DB::commit();
@@ -1358,19 +1328,20 @@ class OrcamentoFinalizacaoController extends Controller
                 if (!empty($param_fiscal)) {
 
                     $content = [
-                        'hashCert' => $param_fiscal->cert_hash,
-                        'passCert' => $param_fiscal->cert_pass,
-                        'idCsc' => $param_fiscal->IdCSC,
-                        'csc' => $param_fiscal->CSC,
-                        'nf' => $nf_created,
-                        'info_frete' => $info_frete,
-                        'nf_itens' => $nf_itens,
-                        'orc_parcelas' => $orc_parcelas
+                        'hashCert'     => $param_fiscal->cert_hash,
+                        'passCert'     => $param_fiscal->cert_pass,
+                        'idCsc'        => $param_fiscal->IdCSC,
+                        'csc'          => $param_fiscal->CSC,
+                        'nf'           => $nf_created,
+                        'info_frete'   => $info_frete,
+                        'nf_itens'     => $nf_itens,
+                        'orc_parcelas' => $orc_parcelas,
+                        'tef_rede'     => $request->input('tef_rede', ''),
                     ];
 
                     $curl = ApiFiscal::getCurl(
-                       '/fiscal/gerar_nota',
-                       'POST',
+                        '/fiscal/gerar_nota',
+                        'POST',
                         $content
                     );
 
@@ -1380,7 +1351,7 @@ class OrcamentoFinalizacaoController extends Controller
 
                     $response = json_decode($response, true);
 
-                    if ($response['status'] == 'OK'){
+                    if ($response['status'] == 'OK') {
 
                         // ATUALIZA TRANSMITIDO
                         $row = [];
@@ -1403,33 +1374,32 @@ class OrcamentoFinalizacaoController extends Controller
 
                             $atualiza_valor = OrcamentoFinalizacao::where('orcamento_id', $orcamento_id)->first();
 
-                            if($atualiza_valor->forma_pagamento == 'SEM'){
+                            if ($atualiza_valor->forma_pagamento == 'SEM') {
 
                                 $atualizar_final_campo = Orcamento::where('id', $orcamento_id)->first();
 
                                 $atualizar_final_campo->update([
                                     'total_liquido' => 0
-                                ]); 
-                            } 
+                                ]);
+                            }
 
                             return response()->json([
                                 'status' => 'OK',
                                 'nf_id' => $nf_created->id
                             ]);
-                        }else{
+                        } else {
                             return response()->json([
                                 'status' => 'NOK',
                                 'data' => 'Houve algum problema ao atualizar com o retorno da nota fiscal.'
                             ]);
                         }
-                    }else{
+                    } else {
                         return response()->json([
                             'status' => 'NOK',
                             'data' => $response['message']
                         ]);
                     }
-
-                }else{
+                } else {
                     return response()->json([
                         'status' => 'NOK',
                         'data' => 'Acesse parametros->fiscal'
@@ -1440,24 +1410,20 @@ class OrcamentoFinalizacaoController extends Controller
                     'status' => 'OK',
                     'data' => 'XML Gerado com sucesso.'
                 ]);
-
-            }else{
+            } else {
                 DB::rollBack();
                 return response()->json([
                     'status' => 'NOK',
                     'data' => 'XML da nota fiscal não foi gerado'
                 ]);
             }
-
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'status' => 'NOK',
                 'data' => $e->getMessage()
             ]);
         }
-
-
     }
 
     public function isAVista(int $orcamento_id)
@@ -1472,14 +1438,13 @@ class OrcamentoFinalizacaoController extends Controller
             if (count($condicao) == 1) {
                 if ($condicao[0] == '0') {
                     return true;
-                }else{
+                } else {
                     return false;
                 }
-            }else{
+            } else {
                 return false;
             }
-
-        }else{
+        } else {
             return null;
         }
     }
@@ -1528,11 +1493,11 @@ class OrcamentoFinalizacaoController extends Controller
                 return response()->json([
                     'status' => 'NOK',
                     'message' => '<p class="bold m-0 font-size-16 color-red">TOTAL DE FORMAS DE PAGAMENTO DIFERENTE DE TOTAL DE CONDIÇÃO DE PGTO</p>' .
-                                 '<p class="font-size-12 m-0">Verifique novamente e faça a correção</p>'
+                        '<p class="font-size-12 m-0">Verifique novamente e faça a correção</p>'
                 ]);
             }
 
-           /* // VALIDA SE CONDICOES ESTA COM NUMEROS CRESCENTES
+            /* // VALIDA SE CONDICOES ESTA COM NUMEROS CRESCENTES
             $arrCondicoes = explode('/', $condicao_pagamento);
             $error = false;
             if (count($arrCondicoes) > 1) {
@@ -1576,14 +1541,14 @@ class OrcamentoFinalizacaoController extends Controller
             $orcamento = Orcamento::find($orcamento_id);
 
             // valida se entrada é maior que total liquido
-//            $valor_entrada = empty($valor_entrada) ? 0 : $valor_entrada;
-//            if (doubleval($valor_entrada) >= doubleval($orcamento->total_liquido)){
-//                return response()->json([
-//                    'status' => 'NOK',
-//                    'message' => '<p class="bold m-0 font-size-16 color-red">VALOR DE ENTRADA INVÁLIDO</p>' .
-//                        '<p class="font-size-12 m-0">Verifique se o valor de entrada é maior que o total.</p>'
-//                ]);
-//            }
+            //            $valor_entrada = empty($valor_entrada) ? 0 : $valor_entrada;
+            //            if (doubleval($valor_entrada) >= doubleval($orcamento->total_liquido)){
+            //                return response()->json([
+            //                    'status' => 'NOK',
+            //                    'message' => '<p class="bold m-0 font-size-16 color-red">VALOR DE ENTRADA INVÁLIDO</p>' .
+            //                        '<p class="font-size-12 m-0">Verifique se o valor de entrada é maior que o total.</p>'
+            //                ]);
+            //            }
 
             if (!empty($orcamento)) {
 
@@ -1597,7 +1562,7 @@ class OrcamentoFinalizacaoController extends Controller
                 $orcamento->update();
 
                 // VALIDA TOTAL DE PARCELAS
-               /* $totalParcelas = 0;
+                /* $totalParcelas = 0;
                 foreach($fields["orcamento_parcelas"] as $parcela) {
                     $totalParcelas+=$parcela['valor'];
                 }
@@ -1617,7 +1582,7 @@ class OrcamentoFinalizacaoController extends Controller
                 $i = 1;
                 $len = count($orcamento_itens);
 
-                $vDesc = number_format($desconto_valor / $len,2,'.','');
+                $vDesc = number_format($desconto_valor / $len, 2, '.', '');
                 $vDescExcept = 0;
                 if (($orcamento->total_liquido + ($len * $vDesc)) > $orcamento->total_bruto)
                     $vDescLast = $vDesc - (($orcamento->total_liquido + ($len * $vDesc)) - $orcamento->total_bruto);
@@ -1627,21 +1592,20 @@ class OrcamentoFinalizacaoController extends Controller
                     $vDescLast = $vDesc;
 
                 foreach ($orcamento_itens as $item) {
-                    if ($i == $len){
+                    if ($i == $len) {
                         // last
-                        if ($vDescLast < $item->subtotal){
+                        if ($vDescLast < $item->subtotal) {
                             $item->desconto = $vDescLast;
                             $item->subtotal = $item->subtotal - $vDescLast;
-                        }else{
-                            $vDescExcept+=$vDescLast;
+                        } else {
+                            $vDescExcept += $vDescLast;
                         }
-
-                    }else{
+                    } else {
                         if ($vDesc < $item->subtotal) {
                             $item->desconto = $vDesc;
                             $item->subtotal = $item->subtotal - $vDesc;
-                        }else{
-                            $vDescExcept+=$vDesc;
+                        } else {
+                            $vDescExcept += $vDesc;
                         }
                     }
                     $item->save();
@@ -1653,21 +1617,20 @@ class OrcamentoFinalizacaoController extends Controller
                     $subTotalBig = 0;
                     $idBig = 0;
                     foreach ($orcamento_itens as $item) {
-                        if ($item->subtotal > $subTotalBig){
+                        if ($item->subtotal > $subTotalBig) {
                             $subTotalBig = $item->subtotal;
                             $idBig = $item->id;
                         }
                     }
 
                     foreach ($orcamento_itens as $item) {
-                        if ($item->id == $idBig){
-                            $item->desconto+=$vDescExcept;
-                            $item->subtotal-=$vDescExcept;
+                        if ($item->id == $idBig) {
+                            $item->desconto += $vDescExcept;
+                            $item->subtotal -= $vDescExcept;
                             $item->save();
                         }
                     }
                 }
-
             } else {
                 return response()->json([
                     'status' => 'NOK',
@@ -1678,7 +1641,7 @@ class OrcamentoFinalizacaoController extends Controller
             // ===================================
             //  VALIDA SE TEM PARCELAS NEGATIVAS
             // ===================================
-           /* $existNegativo = false;
+            /* $existNegativo = false;
             foreach($fields['orcamento_parcelas'] as $parcela) {
                 if (doubleval($parcela["valor"]) <= 0){
                     $existNegativo = true;
@@ -1696,13 +1659,13 @@ class OrcamentoFinalizacaoController extends Controller
             $finalizacao = OrcamentoFinalizacao::where('orcamento_id', $orcamento->id)->first();
             if (empty($finalizacao)) {
 
-//                $created = OrcamentoFinalizacao::create([
-//                    'orcamento_id' => $orcamento_id,
-//                    'condicao_pagamento' => $condicao_pagamento,
-//                    'forma_pagamento' => $forma_pagamento,
-//                    'centavo_ultima_parcela' => $centavo_ultima_parcela,
-//                    'valor_entrada' => $valor_entrada
-//                ]);
+                //                $created = OrcamentoFinalizacao::create([
+                //                    'orcamento_id' => $orcamento_id,
+                //                    'condicao_pagamento' => $condicao_pagamento,
+                //                    'forma_pagamento' => $forma_pagamento,
+                //                    'centavo_ultima_parcela' => $centavo_ultima_parcela,
+                //                    'valor_entrada' => $valor_entrada
+                //                ]);
                 $created = OrcamentoFinalizacao::create([
                     'orcamento_id' => $orcamento_id,
                     'condicao_pagamento' => $condicao_pagamento,
@@ -1715,7 +1678,7 @@ class OrcamentoFinalizacaoController extends Controller
                     // GERAR AS PARCELAS
                     try {
                         $this->store_parcelas($orcamento->id, $fields['orcamento_parcelas']);
-                    }catch (\Exception $e){
+                    } catch (\Exception $e) {
                         DB::rollBack();
                         return response()->json([
                             'status' => 'NOK',
@@ -1729,7 +1692,6 @@ class OrcamentoFinalizacaoController extends Controller
                         'status' => 'OK',
                         'message' => 'Orçamento ' . $orcamento->id . ' concluído com sucesso.'
                     ]);
-
                 } else {
                     DB::rollBack();
                     return response()->json([
@@ -1737,7 +1699,6 @@ class OrcamentoFinalizacaoController extends Controller
                         'message' => 'Houve algum problema ao tentar concluir, finalização não cadastrada.'
                     ]);
                 }
-
             } else {
 
                 $finalizacao->condicao_pagamento = $condicao_pagamento;
@@ -1751,7 +1712,7 @@ class OrcamentoFinalizacaoController extends Controller
                     // GERAR AS PARCELAS
                     try {
                         $this->store_parcelas($orcamento->id, $fields['orcamento_parcelas']);
-                    }catch (\Exception $e){
+                    } catch (\Exception $e) {
                         DB::rollBack();
                         return response()->json([
                             'status' => 'NOK',
@@ -1765,7 +1726,6 @@ class OrcamentoFinalizacaoController extends Controller
                         'status' => 'OK',
                         'message' => 'Orçamento ' . $orcamento->id . ' concluído com sucesso.'
                     ]);
-
                 } else {
                     DB::rollBack();
                     return response()->json([
@@ -1773,9 +1733,7 @@ class OrcamentoFinalizacaoController extends Controller
                         'message' => 'Houve algum problema ao tentar concluir.'
                     ]);
                 }
-
             }
-
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -1783,13 +1741,12 @@ class OrcamentoFinalizacaoController extends Controller
                 'message' => $e->getMessage()
             ]);
         }
-
     }
 
     /**
      * @param $orcamento_id
      * @param $parcelas
-     */ 
+     */
 
     public function store_faturar(Request $request)
     {
@@ -1807,10 +1764,10 @@ class OrcamentoFinalizacaoController extends Controller
             ->first();
 
         if (empty($tipo_movimento))
-        return response()->json([
-            'status' => 'NOK',
-            'data' => 'Tipo de movimento não encontrado'
-        ]);
+            return response()->json([
+                'status' => 'NOK',
+                'data' => 'Tipo de movimento não encontrado'
+            ]);
 
         $orcamento = Orcamento::where('empresa_id', $empresa_id)
             ->where('id', $orcamento_id)
@@ -1826,15 +1783,15 @@ class OrcamentoFinalizacaoController extends Controller
             $mov_financeiro = true;
 
         DB::beginTransaction();
-        try{
+        try {
 
             // GERAR FINANCEIRO
-            if ($mov_financeiro){
+            if ($mov_financeiro) {
 
                 $parcelas = OrcamentoParcela::where('orcamento_id', $orcamento->id)
                     ->get();
 
-                if (count($parcelas) <= 0){
+                if (count($parcelas) <= 0) {
                     return response()->json([
                         'status' => 'NOK',
                         'data' => 'Não foram definidas parcelas para este orçamento'
@@ -1844,7 +1801,7 @@ class OrcamentoFinalizacaoController extends Controller
                 // FAZ OS LANCAMENTOS NO RECEITA
                 $id_primeiro_lcto = 0;
                 $next = 0;
-                foreach ($parcelas as $parcela){
+                foreach ($parcelas as $parcela) {
 
                     $lcto = [];
                     $lcto['id_primeiro_lcto'] = 0;
@@ -1852,7 +1809,7 @@ class OrcamentoFinalizacaoController extends Controller
                     $lcto['pessoa_id'] = $orcamento->cliente_id;
                     $lcto['tipo'] = 'RECEITA';
                     $lcto['categoria'] = 'NORMAL';
-                    $lcto['valor'] = number_format($parcela->valor,2,'.','');
+                    $lcto['valor'] = number_format($parcela->valor, 2, '.', '');
                     $lcto['saldo'] = $lcto['valor'];
                     $lcto['valor_original'] = $lcto['valor'];
                     $lcto['desconto_valor'] = 0;
@@ -1875,7 +1832,7 @@ class OrcamentoFinalizacaoController extends Controller
 
                     $receita = Receita::create($lcto);
 
-                    if (!empty($receita)){
+                    if (!empty($receita)) {
 
                         if ($next == 0) {
                             $id_primeiro_lcto = $receita->id;
@@ -1886,7 +1843,7 @@ class OrcamentoFinalizacaoController extends Controller
                             'id_primeiro_lcto' => $id_primeiro_lcto
                         ]);
 
-                        if (!$updated){
+                        if (!$updated) {
                             DB::rollBack();
                             return response()->json([
                                 'status' => 'NOK',
@@ -1894,7 +1851,7 @@ class OrcamentoFinalizacaoController extends Controller
                             ]);
                             break;
                         }
-                    }else{
+                    } else {
                         DB::rollBack();
                         return response()->json([
                             'status' => 'NOK',
@@ -1904,7 +1861,7 @@ class OrcamentoFinalizacaoController extends Controller
                     }
 
                     // SE TIVER ENTRADA OU FOR AVISTA, LIQUIDAR E LANCAR NO CAIXA
-                    if (intval($parcela->avista) == 1){
+                    if (intval($parcela->avista) == 1) {
 
                         // LIQUIDA A PARCELA
                         $liquidacao = [];
@@ -1954,7 +1911,7 @@ class OrcamentoFinalizacaoController extends Controller
                                 ]);
                                 break;
                             }
-                        }else{
+                        } else {
                             DB::rollBack();
                             return response()->json([
                                 'status' => 'NOK',
@@ -1969,7 +1926,7 @@ class OrcamentoFinalizacaoController extends Controller
                             'user_idRecPag' => $user_id,
                             'dh_RecPag' => date('Y-m-d H:i:s')
                         ]);
-                        if (!$updated){
+                        if (!$updated) {
                             DB::rollBack();
                             return response()->json([
                                 'status' => 'NOK',
@@ -1992,7 +1949,7 @@ class OrcamentoFinalizacaoController extends Controller
                         $caixa_movimento['is_origem_externo'] = 1;
 
                         $movimento_created = CaixaMovimento::create($caixa_movimento);
-                        if (empty($movimento_created)){
+                        if (empty($movimento_created)) {
                             DB::rollBack();
                             return response()->json([
                                 'status' => 'NOK',
@@ -2005,14 +1962,14 @@ class OrcamentoFinalizacaoController extends Controller
             }
 
             // BAIXA ESTOQUE
-            if ($mov_estoque){
+            if ($mov_estoque) {
                 $itens = OrcamentoItens::where('orcamento_id', $orcamento->id)->get();
                 if (count($itens) > 0) {
-                    foreach ($itens as $item){
+                    foreach ($itens as $item) {
                         $produtoEstoque = ProdutoEstoque::where('empresa_id', $empresa_id)
                             ->where('produto_id', $item->produto_id)
                             ->first();
-                        if (!empty($produtoEstoque)){
+                        if (!empty($produtoEstoque)) {
                             $produtoEstoque->estoque = doubleval($produtoEstoque->estoque) - doubleval($item->quantidade);
                             $produtoEstoque->save();
                         }
@@ -2040,15 +1997,12 @@ class OrcamentoFinalizacaoController extends Controller
                 'status' => 'OK',
                 'data' => 'Sua venda foi faturada com sucesso!'
             ]);
-
-
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
             return Helper::msg_exception($e->getMessage());
         }
-
     }
-    
+
     private function store_parcelas($orcamento_id, $parcelas)
     {
 
@@ -2059,14 +2013,13 @@ class OrcamentoFinalizacaoController extends Controller
             OrcamentoParcela::create([
                 'orcamento_id' => $orcamento_id,
                 'sequencial' => $parcela['seq'],
-                'valor' => number_format($parcela['valor'], 2,'.', ''),
+                'valor' => number_format($parcela['valor'], 2, '.', ''),
                 'vencimento' => $parcela['vcto'],
                 'forma_pagamento_id' => preg_replace('/[0-9]/', '', $parcela['forma']),
                 'avista' => (strtotime(date('Y-m-d')) == strtotime($parcela['vcto'])) ? 1 : 0,
                 'cAut' =>  $parcela['div']
             ]);
         }
-
     }
 
     /**
@@ -2157,6 +2110,4 @@ class OrcamentoFinalizacaoController extends Controller
             $parcelamento_cliente = substr($parcelamento_cliente, 0, strlen($parcelamento_cliente) - 1);
         return $parcelamento_cliente;
     }
-
-
 }
