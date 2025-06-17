@@ -2005,21 +2005,56 @@ class OrcamentoFinalizacaoController extends Controller
 
     private function store_parcelas($orcamento_id, $parcelas)
     {
-
         OrcamentoParcela::where('orcamento_id', $orcamento_id)
             ->delete();
 
+        $parcelas = $this->normalizeParcelasValores($parcelas);
+
         foreach ($parcelas as $parcela) {
             OrcamentoParcela::create([
-                'orcamento_id' => $orcamento_id,
-                'sequencial' => $parcela['seq'],
-                'valor' => number_format($parcela['valor'], 2, '.', ''),
-                'vencimento' => $parcela['vcto'],
-                'forma_pagamento_id' => preg_replace('/[0-9]/', '', $parcela['forma']),
-                'avista' => (strtotime(date('Y-m-d')) == strtotime($parcela['vcto'])) ? 1 : 0,
-                'cAut' =>  $parcela['div']
+                'orcamento_id'      => $orcamento_id,
+                'sequencial'        => $parcela['seq'],
+                'valor'             => number_format($parcela['valor'], 2, '.', ''),
+                'vencimento'        => $parcela['vcto'],
+                'forma_pagamento_id'=> preg_replace('/[0-9]/', '', $parcela['forma']),
+                'avista'            => (strtotime(date('Y-m-d')) == strtotime($parcela['vcto'])) ? 1 : 0,
+                'cAut'              => $parcela['div']
             ]);
         }
+    }
+
+    private function normalizeParcelasValores(array $parcelas): array
+    {
+        $groups = [];
+        foreach ($parcelas as $p) {
+            $valor = str_replace(['.', ','], ['', '.'], $p['valor']);
+            $valor = round((float) $valor, 2);
+            $p['valor'] = $valor;
+            $key = $p['forma'] . '#' . ($p['div'] ?? '');
+            $groups[$key][] = $p;
+        }
+
+        $result = [];
+        foreach ($groups as $group) {
+            $totalCents = array_reduce($group, fn($s, $g) => $s + (int) round($g['valor'] * 100), 0);
+            $count = count($group);
+            $baseCents = intdiv($totalCents, $count);
+            $somaCents = 0;
+
+            foreach ($group as $idx => $g) {
+                if ($idx === $count - 1) {
+                    $valorCents = $totalCents - $somaCents;
+                } else {
+                    $valorCents = $baseCents;
+                    $somaCents += $baseCents;
+                }
+                $g['valor'] = $valorCents / 100;
+                $result[] = $g;
+            }
+        }
+
+        usort($result, fn($a, $b) => ($a['seq'] ?? 0) <=> ($b['seq'] ?? 0));
+        return $result;
     }
 
     /**
