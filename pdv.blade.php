@@ -2108,13 +2108,13 @@
                     $btn.prop('disabled', false);
                   })
                   .always(() => {
-                  isProcessandoEmissaoNFe = false;
-                });
-            } else {
-              console.log('DEBUG aguardando faturamento antes de emitir NF-e');
-              isProcessandoEmissaoNFe = false;
-            }
-          });
+                    isProcessandoEmissaoNFe = false;
+                  });
+              } else {
+                console.log('DEBUG aguardando faturamento antes de emitir NF-e');
+                isProcessandoEmissaoNFe = false;
+              }
+            });
 
           $('#btnConfirmarEmitirNFCE')
             .off('click')
