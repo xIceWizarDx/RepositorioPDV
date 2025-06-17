@@ -1442,21 +1442,28 @@
 
             const condicoes = window.paymentConditions[forma] || [0];
             const N = condicoes.length;
-            const valorBase = valorTotal / N;
-            let soma = 0;
+
+            const totalCents = Math.round(valorTotal * 100);
+            const baseCents = Math.floor(totalCents / N);
+            let somaCents = 0;
 
             condicoes.forEach((dias, idx) => {
               const dataVenc = new Date();
               dataVenc.setDate(dataVenc.getDate() + dias);
-              const valorParcela = idx === N - 1 ?
-                valorTotal - soma :
-                valorBase;
-              soma += idx < N - 1 ? valorBase : 0;
+              let valorParcelaCents;
+              if (idx === N - 1) {
+                valorParcelaCents = totalCents - somaCents;
+              } else {
+                valorParcelaCents = baseCents;
+                somaCents += baseCents;
+              }
+
+              const valorParcela = valorParcelaCents / 100;
 
               parcelasPagamento.push({
                 id: parcelaIdCounter++,
                 seq: idx + 1,
-                valor: valorParcela,
+                valor: parseFloat(valorParcela.toFixed(2)),
                 vencimento: dataVenc.toLocaleDateString('pt-BR'),
                 forma: forma,
                 condicao: N
@@ -1473,14 +1480,15 @@
             .replace(/[^0-9,.-]/g, '')
             .replace(',', '.')
           );
-          const somaParcelas = parcelasPagamento.reduce((sum, p) => sum + p.valor, 0);
+          const totalCents = Math.round(totalVenda * 100);
+          const somaCents = parcelasPagamento.reduce((sum, p) => sum + Math.round(p.valor * 100), 0);
 
-          if (somaParcelas < totalVenda) {
+          if (somaCents < totalCents) {
             if (ultimoAvisoParcelas !== 'menor') {
               showToast('A soma das formas de pagamento é menor que o total da venda.', 'warning');
               ultimoAvisoParcelas = 'menor';
             }
-          } else if (somaParcelas > totalVenda) {
+          } else if (somaCents > totalCents) {
             if (ultimoAvisoParcelas !== 'maior') {
               showToast('A soma das formas de pagamento é maior que o total da venda.', 'warning');
               ultimoAvisoParcelas = 'maior';
@@ -1791,16 +1799,18 @@
         $(document).on('input', prefix + ' .valor-parcela-input', function() {
           setTimeout(() => {
             atualizarParcelasMultiplasModal();
-            const sumExisting = parcelasPagamento.reduce((a, b) => a + b.valor, 0);
+            const sumExistingCents = parcelasPagamento.reduce((a, b) => a + Math.round(b.valor * 100), 0);
             const totalVenda = parseFloatStrict($(prefix + '#totalLiquidoValor').text().replace(/[^0-9,.-]/g, ''));
-            const diff = totalVenda - sumExisting;
+            const totalVendaCents = Math.round(totalVenda * 100);
+            const diffCents = totalVendaCents - sumExistingCents;
+            const diff = diffCents / 100;
             $(prefix + '#valorFaltanteDisplay').text(formatCurrency(Math.abs(diff)));
-            if (diff <= 0) {
+            if (diffCents <= 0) {
               $(prefix + '#valorFaltanteDisplay').addClass('valor-faltante-zero');
             } else {
               $(prefix + '#valorFaltanteDisplay').removeClass('valor-faltante-zero');
             }
-            $(prefix + '#modalBtnConfirmarFinalizacao').prop('disabled', (diff > 0.005));
+            $(prefix + '#modalBtnConfirmarFinalizacao').prop('disabled', diffCents !== 0);
           }, 0);
         });
 
@@ -1823,10 +1833,11 @@
             const totalVenda = parseFloatStrict(
               $(prefix + '#totalLiquidoValor').text().replace(/[^0-9,.-]/g, '')
             );
-            const pago = parcelasPagamento.reduce((sum, p) => sum + p.valor, 0);
-            const faltante = totalVenda - pago;
+            const totalCents = Math.round(totalVenda * 100);
+            const pagoCents = parcelasPagamento.reduce((sum, p) => sum + Math.round(p.valor * 100), 0);
+            const faltanteCents = totalCents - pagoCents;
 
-            if (faltante > 0.005) {
+            if (faltanteCents > 0) {
               adicionarNovaFormaPagamentoMultiplasModal();
               setTimeout(() => {
                 const $lastSelect = $(prefix + '#multiplasFormasListModal select.forma-pagamento-select').last();
@@ -1894,11 +1905,12 @@
             return;
           }
 
-          const totalPago = parcelasPagamento.reduce((acc, p) => acc + p.valor, 0);
+          const totalPagoCents = parcelasPagamento.reduce((acc, p) => acc + Math.round(p.valor * 100), 0);
           const totalVenda = parseFloatStrict($(prefix + '#totalLiquidoValor').text().replace(/[^0-9,.-]/g, ''));
-          console.log('DEBUG totalPago:', totalPago, 'totalVenda:', totalVenda);
+          const totalVendaCents = Math.round(totalVenda * 100);
+          console.log('DEBUG totalPago:', totalPagoCents / 100, 'totalVenda:', totalVenda);
 
-          if (Math.abs(totalPago - totalVenda) > 0.05) {
+          if (totalPagoCents !== totalVendaCents) {
             console.log('DEBUG soma das parcelas != total da venda');
             showToast('A soma das formas de pagamento deve ser igual ao total da venda.', 'warning');
             isProcessandoFinalizacao = false;
@@ -2208,8 +2220,10 @@
         // Atualiza o valor que ainda falta ser pago na venda
         function calcularValorFaltante() {
           const totL = parseFloatStrict($(prefix + '#totalLiquidoValor').text().replace(/[^0-9,.-]/g, ''));
-          const pago = parcelasPagamento.reduce((a, b) => a + b.valor, 0);
-          const diff = totL - pago;
+          const totLCents = Math.round(totL * 100);
+          const pagoCents = parcelasPagamento.reduce((a, b) => a + Math.round(b.valor * 100), 0);
+          const diffCents = totLCents - pagoCents;
+          const diff = diffCents / 100;
 
           $(prefix + '#faltamPagarValor').text(formatCurrency(Math.abs(diff)));
           $(prefix + '#valorFaltanteDisplay').text(formatCurrency(Math.abs(diff)));
