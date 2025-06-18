@@ -44,28 +44,25 @@ Auth::routes();
 
 
 Route::group([
-    'middleware' => ['auth', 'client.active','user.active','init']
-], function(){
-    
+    'middleware' => ['auth', 'client.active', 'user.active', 'init']
+], function () {
+
     // tela do PDV
     Route::get('/pdv', [PdvController::class, 'index'])
-         ->name('pdv.index');
-    
+        ->name('pdv.index');
+
     // AJAX do Select2 de produtos
     Route::get('/pdv/search-products', [PdvController::class, 'searchProducts'])
-         ->name('pdv.search.products');
-    
+        ->name('pdv.search.products');
+
     // criar orçamento (via AJAX no PDV)
     Route::post('/vendas/orcamento', [OrcamentoController::class, 'store'])
-         ->name('vendas.orcamento.store');
+        ->name('vendas.orcamento.store');
 
-    Route::get('/vendas/orcamento/{orcamento}/print', [OrcamentoController::class, 'print'])
-         ->name('vendas.orcamento.print');
 
-         
 
-    
-     
+
+
 
     Route::put('/user/update/{user}/active', [\App\Http\Controllers\Auth\RegisterController::class, 'updateActive'])
         ->name('user.update.active');
@@ -81,14 +78,14 @@ Route::group([
         ->name('npanel.store');
     Route::get('/npanel/create', [NPanelController::class, 'create'])
         ->name('npanel.create');
-    Route::put('/npanel/{cliente}',[NPanelController::class, 'update'])
+    Route::put('/npanel/{cliente}', [NPanelController::class, 'update'])
         ->name('npanel.update');
     Route::get('/npanel/{cliente}/edit', [NPanelController::class, 'edit'])
         ->name('npanel.edit');
     Route::get('/npanel/{cliente}/empresas', [NPanelController::class, 'empresas'])
         ->name('npanel.empresas');
     Route::get('/npanel/update_tables_dbs', [NPanelController::class, 'update_tables_dbs'])
-        ->name('npanel.update_tables_dbs');    
+        ->name('npanel.update_tables_dbs');
 
 
     Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
@@ -111,7 +108,7 @@ Route::group([
 
     Route::group([
         'middleware' => ['ajax.only']
-    ], function(){
+    ], function () {
         //GERAL
         Route::get('/parametros/geral', [GeralController::class, 'index'])
             ->name('parametros.geral');
@@ -121,11 +118,11 @@ Route::group([
         Route::get('/parametros/financeiro', [FinanceiroController::class, 'index'])
             ->name('parametros.financeiro');
         Route::get('/parametros/financeiro/busca_id', [FinanceiroController::class, 'busca_id'])
-            ->name('parametros.financeiro.busca_id');    
+            ->name('parametros.financeiro.busca_id');
         Route::post('/parametros/financeiro/salva_informacoes', [FinanceiroController::class, 'updateInformacoes'])
-            ->name('parametros.financeiro.salva_informacoes'); 
+            ->name('parametros.financeiro.salva_informacoes');
         Route::post('/parametros/financeiro/resetar_informacoes', [FinanceiroController::class, 'resetarInformacoes'])
-            ->name('parametros.financeiro.resetar_informacoes');       
+            ->name('parametros.financeiro.resetar_informacoes');
         //ESTOQUE
         Route::get('/parametros/estoque', [EstoqueController::class, 'index'])
             ->name('parametros.estoque');
@@ -158,8 +155,7 @@ Route::group([
         Route::put('/parametros/fiscal/IdCSC', [FiscalController::class, 'updateIdCSC'])
             ->name('parametros.fiscal.update_idcsc');
         Route::put('/parametros/fiscal/CSC', [FiscalController::class, 'updateCSC'])
-            ->name('parametros.fiscal.update_csc');    
-
+            ->name('parametros.fiscal.update_csc');
     });
 
     // -------------------------------
@@ -167,21 +163,21 @@ Route::group([
     // -------------------------------
     Route::group([
         'as' => 'cadastros.'
-    ], function(){
+    ], function () {
 
         // CADASTROS->EMPRESA
         Route::get('/cadastros/empresa', [EmpresaController::class, 'index'])
             ->name('empresa.index');
         Route::group([
             'middleware' => ['ajax.only']
-        ], function(){
+        ], function () {
             Route::get('/cadastros/empresa/table', [EmpresaController::class, 'table'])
                 ->name('empresa.table');
             Route::post('/cadastros/empresa', [EmpresaController::class, 'store'])
                 ->name('empresa.store');
             Route::get('/cadastros/empresa/create', [EmpresaController::class, 'create'])
                 ->name('empresa.create');
-            Route::put('/cadastros/empresa/{empresa}',[EmpresaController::class, 'update'])
+            Route::put('/cadastros/empresa/{empresa}', [EmpresaController::class, 'update'])
                 ->name('empresa.update');
             Route::get('/cadastros/empresa/{empresa}/edit', [EmpresaController::class, 'edit'])
                 ->name('empresa.edit');
@@ -202,14 +198,14 @@ Route::group([
 
         Route::group([
             'middleware' => ['ajax.only']
-        ], function(){
+        ], function () {
             Route::get('/cadastros/pessoa/table', [PessoaController::class, 'table'])
                 ->name('pessoa.table');
             Route::post('/cadastros/pessoa', [PessoaController::class, 'store'])
                 ->name('pessoa.store');
             Route::get('/cadastros/pessoa/create', [PessoaController::class, 'create'])
                 ->name('pessoa.create');
-            Route::put('/cadastros/pessoa/{pessoa}',[PessoaController::class, 'update'])
+            Route::put('/cadastros/pessoa/{pessoa}', [PessoaController::class, 'update'])
                 ->name('pessoa.update');
             Route::get('/cadastros/pessoa/{pessoa}/edit', [PessoaController::class, 'edit'])
                 ->name('pessoa.edit');
@@ -220,14 +216,14 @@ Route::group([
         // --------------------------
         Route::group([
             'middleware' => ['ajax.only']
-        ], function(){
+        ], function () {
             Route::get('/cadastros/vendedor/table', [VendedorController::class, 'table'])
                 ->name('vendedor.table');
             Route::post('/cadastros/vendedor', [VendedorController::class, 'adicionar'])
                 ->name('vendedor.adicionar');
             Route::get('/cadastros/vendedor', [VendedorController::class, 'index'])
                 ->name('vendedor.index');
-            Route::delete('/cadastros/vendedor/{id}', [VendedorController::class,'remover'])
+            Route::delete('/cadastros/vendedor/{id}', [VendedorController::class, 'remover'])
                 ->name('vendedor.remover');
         });
 
@@ -239,14 +235,14 @@ Route::group([
 
         Route::group([
             'middleware' => ['ajax.only']
-        ], function(){
+        ], function () {
             Route::get('/cadastros/produto/table', [ProdutoController::class, 'table'])
                 ->name('produto.table');
             Route::post('/cadastros/produto', [ProdutoController::class, 'store'])
                 ->name('produto.store');
             Route::get('/cadastros/produto/create', [ProdutoController::class, 'create'])
                 ->name('produto.create');
-            Route::put('/cadastros/produto/{produto}',[ProdutoController::class, 'update'])
+            Route::put('/cadastros/produto/{produto}', [ProdutoController::class, 'update'])
                 ->name('produto.update');
             Route::get('/cadastros/produto/{produto}/edit', [ProdutoController::class, 'edit'])
                 ->name('produto.edit');
@@ -261,7 +257,7 @@ Route::group([
             Route::get('/cadastros/produto/produtos_sem_estoque', [ProdutoController::class, 'produtos_sem_estoque'])
                 ->name('produto.produtos_sem_estoque');
             Route::get('/cadastros/produto/produtos_para_venda', [ProdutoController::class, 'produtos_para_venda'])
-                ->name('produto.produtos_para_venda');    
+                ->name('produto.produtos_para_venda');
         });
 
         //--------------------------
@@ -271,7 +267,7 @@ Route::group([
             ->name('perfil_fiscal.index');
         Route::group([
             'middleware' => ['ajax.only']
-        ], function(){
+        ], function () {
 
             Route::get('/cadastros/perfil_fiscal/table', [PerfilFiscalController::class, 'table'])
                 ->name('perfil_fiscal.table');
@@ -279,11 +275,10 @@ Route::group([
                 ->name('perfil_fiscal.store');
             Route::get('/cadastros/perfil_fiscal/create', [PerfilFiscalController::class, 'create'])
                 ->name('perfil_fiscal.create');
-            Route::put('/cadastros/perfil_fiscal/{perfil_fiscal}',[PerfilFiscalController::class, 'update'])
+            Route::put('/cadastros/perfil_fiscal/{perfil_fiscal}', [PerfilFiscalController::class, 'update'])
                 ->name('perfil_fiscal.update');
             Route::get('/cadastros/perfil_fiscal/{perfil_fiscal}/edit', [PerfilFiscalController::class, 'edit'])
                 ->name('perfil_fiscal.edit');
-
         });
 
         // CADASTROS->TABELAS AUXILIARES
@@ -295,7 +290,7 @@ Route::group([
         // -------------------------------------
         Route::group([
             'middleware' => ['ajax.only']
-        ], function(){
+        ], function () {
             Route::get('/cadastros/tabelas_auxiliares/banco/table', [BancoController::class, 'table'])
                 ->name('tabelas_auxiliares.banco.table');
             Route::post('/cadastros/tabelas_auxiliares/banco', [BancoController::class, 'store'])
@@ -304,7 +299,7 @@ Route::group([
                 ->name('tabelas_auxiliares.banco.index');
             Route::get('/cadastros/tabelas_auxiliares/banco/create', [BancoController::class, 'create'])
                 ->name('tabelas_auxiliares.banco.create');
-            Route::put('/cadastros/tabelas_auxiliares/banco/{banco}',[BancoController::class, 'update'])
+            Route::put('/cadastros/tabelas_auxiliares/banco/{banco}', [BancoController::class, 'update'])
                 ->name('tabelas_auxiliares.banco.update');
             Route::get('/cadastros/tabelas_auxiliares/banco/{banco}/edit', [BancoController::class, 'edit'])
                 ->name('tabelas_auxiliares.banco.edit');
@@ -315,7 +310,7 @@ Route::group([
         // --------------------------------------------
         Route::group([
             'middleware' => ['ajax.only']
-        ], function(){
+        ], function () {
             Route::get('/cadastros/tabelas_auxiliares/centro_custo/table', [CentroCustoController::class, 'table'])
                 ->name('tabelas_auxiliares.centro_custo.table');
             Route::post('/cadastros/tabelas_auxiliares/centro_custo', [CentroCustoController::class, 'store'])
@@ -324,7 +319,7 @@ Route::group([
                 ->name('tabelas_auxiliares.centro_custo.index');
             Route::get('/cadastros/tabelas_auxiliares/centro_custo/create', [CentroCustoController::class, 'create'])
                 ->name('tabelas_auxiliares.centro_custo.create');
-            Route::put('/cadastros/tabelas_auxiliares/centro_custo/{centroCusto}',[CentroCustoController::class, 'update'])
+            Route::put('/cadastros/tabelas_auxiliares/centro_custo/{centroCusto}', [CentroCustoController::class, 'update'])
                 ->name('tabelas_auxiliares.centro_custo.update');
             Route::get('/cadastros/tabelas_auxiliares/centro_custo/{centroCusto}/edit', [CentroCustoController::class, 'edit'])
                 ->name('tabelas_auxiliares.centro_custo.edit');
@@ -335,7 +330,7 @@ Route::group([
         // ------------------------------------------------
         Route::group([
             'middleware' => ['ajax.only']
-        ], function(){
+        ], function () {
             Route::get('/cadastros/tabelas_auxiliares/grupo_produto/table', [GrupoProdutoController::class, 'table'])
                 ->name('tabelas_auxiliares.grupo_produto.table');
             Route::post('/cadastros/tabelas_auxiliares/grupo_produto', [GrupoProdutoController::class, 'store'])
@@ -344,7 +339,7 @@ Route::group([
                 ->name('tabelas_auxiliares.grupo_produto.index');
             Route::get('/cadastros/tabelas_auxiliares/grupo_produto/create', [GrupoProdutoController::class, 'create'])
                 ->name('tabelas_auxiliares.grupo_produto.create');
-            Route::put('/cadastros/tabelas_auxiliares/grupo_produto/{grupoProduto}',[GrupoProdutoController::class, 'update'])
+            Route::put('/cadastros/tabelas_auxiliares/grupo_produto/{grupoProduto}', [GrupoProdutoController::class, 'update'])
                 ->name('tabelas_auxiliares.grupo_produto.update');
             Route::get('/cadastros/tabelas_auxiliares/grupo_produto/{grupoProduto}/edit', [GrupoProdutoController::class, 'edit'])
                 ->name('tabelas_auxiliares.grupo_produto.edit');
@@ -355,7 +350,7 @@ Route::group([
         // ----------------------------------------------
         Route::group([
             'middleware' => ['ajax.only']
-        ], function (){
+        ], function () {
             Route::get('/cadastros/tabelas_auxiliares/marca_produto/table', [MarcaProdutoController::class, 'table'])
                 ->name('tabelas_auxiliares.marca_produto.table');
             Route::post('/cadastros/tabelas_auxiliares/marca_produto', [MarcaProdutoController::class, 'store'])
@@ -364,7 +359,7 @@ Route::group([
                 ->name('tabelas_auxiliares.marca_produto.index');
             Route::get('/cadastros/tabelas_auxiliares/marca_produto/create', [MarcaProdutoController::class, 'create'])
                 ->name('tabelas_auxiliares.marca_produto.create');
-            Route::put('/cadastros/tabelas_auxiliares/marca_produto/{marcaProduto}',[MarcaProdutoController::class, 'update'])
+            Route::put('/cadastros/tabelas_auxiliares/marca_produto/{marcaProduto}', [MarcaProdutoController::class, 'update'])
                 ->name('tabelas_auxiliares.marca_produto.update');
             Route::get('/cadastros/tabelas_auxiliares/marca_produto/{marcaProduto}/edit', [MarcaProdutoController::class, 'edit'])
                 ->name('tabelas_auxiliares.marca_produto.edit');
@@ -375,7 +370,7 @@ Route::group([
         // --------------------------------------------
         Route::group([
             'middleware' => ['ajax.only']
-        ], function(){
+        ], function () {
             Route::get('/cadastros/tabelas_auxiliares/natureza_operacao/table', [NaturezaOperacaoController::class, 'table'])
                 ->name('tabelas_auxiliares.natureza_operacao.table');
             Route::post('/cadastros/tabelas_auxiliares/natureza_operacao', [NaturezaOperacaoController::class, 'store'])
@@ -384,7 +379,7 @@ Route::group([
                 ->name('tabelas_auxiliares.natureza_operacao.index');
             Route::get('/cadastros/tabelas_auxiliares/natureza_operacao/create', [NaturezaOperacaoController::class, 'create'])
                 ->name('tabelas_auxiliares.natureza_operacao.create');
-            Route::put('/cadastros/tabelas_auxiliares/natureza_operacao/{naturezaOperacao}',[NaturezaOperacaoController::class, 'update'])
+            Route::put('/cadastros/tabelas_auxiliares/natureza_operacao/{naturezaOperacao}', [NaturezaOperacaoController::class, 'update'])
                 ->name('tabelas_auxiliares.natureza_operacao.update');
             Route::get('/cadastros/tabelas_auxiliares/natureza_operacao/{naturezaOperacao}/edit', [NaturezaOperacaoController::class, 'edit'])
                 ->name('tabelas_auxiliares.natureza_operacao.edit');
@@ -395,7 +390,7 @@ Route::group([
         // --------------------------------------------
         Route::group([
             'middleware' => ['ajax.only']
-        ], function (){
+        ], function () {
             Route::get('/cadastros/tabelas_auxiliares/ncm/table', [NcmController::class, 'table'])
                 ->name('tabelas_auxiliares.ncm.table');
             Route::post('/cadastros/tabelas_auxiliares/ncm', [NcmController::class, 'store'])
@@ -404,7 +399,7 @@ Route::group([
                 ->name('tabelas_auxiliares.ncm.index');
             Route::get('/cadastros/tabelas_auxiliares/ncm/create', [NcmController::class, 'create'])
                 ->name('tabelas_auxiliares.ncm.create');
-            Route::put('/cadastros/tabelas_auxiliares/ncm/{ncm}',[NcmController::class, 'update'])
+            Route::put('/cadastros/tabelas_auxiliares/ncm/{ncm}', [NcmController::class, 'update'])
                 ->name('tabelas_auxiliares.ncm.update');
             Route::get('/cadastros/tabelas_auxiliares/ncm/{ncm}/edit', [NcmController::class, 'edit'])
                 ->name('tabelas_auxiliares.ncm.edit');
@@ -415,7 +410,7 @@ Route::group([
         // --------------------------------------------
         Route::group([
             'middleware' => ['ajax.only']
-        ], function (){
+        ], function () {
             Route::get('/cadastros/tabelas_auxiliares/caixa/table', [\App\Http\Controllers\Cadastro\TabelaAuxiliar\CaixaController::class, 'table'])
                 ->name('tabelas_auxiliares.caixa.table');
             Route::post('/cadastros/tabelas_auxiliares/caixa', [\App\Http\Controllers\Cadastro\TabelaAuxiliar\CaixaController::class, 'store'])
@@ -424,7 +419,7 @@ Route::group([
                 ->name('tabelas_auxiliares.caixa.index');
             Route::get('/cadastros/tabelas_auxiliares/caixa/create', [\App\Http\Controllers\Cadastro\TabelaAuxiliar\CaixaController::class, 'create'])
                 ->name('tabelas_auxiliares.caixa.create');
-            Route::put('/cadastros/tabelas_auxiliares/caixa/{caixa}',[\App\Http\Controllers\Cadastro\TabelaAuxiliar\CaixaController::class, 'update'])
+            Route::put('/cadastros/tabelas_auxiliares/caixa/{caixa}', [\App\Http\Controllers\Cadastro\TabelaAuxiliar\CaixaController::class, 'update'])
                 ->name('tabelas_auxiliares.caixa.update');
             Route::get('/cadastros/tabelas_auxiliares/caixa/{caixa}/edit', [\App\Http\Controllers\Cadastro\TabelaAuxiliar\CaixaController::class, 'edit'])
                 ->name('tabelas_auxiliares.caixa.edit');
@@ -435,7 +430,7 @@ Route::group([
         // -----------------------------------------------
         Route::group([
             'middleware' => ['ajax.only']
-        ], function (){
+        ], function () {
             Route::get('/cadastros/tabelas_auxiliares/parametro_cartao/table', [ParametroCartaoController::class, 'table'])
                 ->name('tabelas_auxiliares.parametro_cartao.table');
             Route::post('/cadastros/tabelas_auxiliares/parametro_cartao', [ParametroCartaoController::class, 'store'])
@@ -444,7 +439,7 @@ Route::group([
                 ->name('tabelas_auxiliares.parametro_cartao.index');
             Route::get('/cadastros/tabelas_auxiliares/parametro_cartao/create', [ParametroCartaoController::class, 'create'])
                 ->name('tabelas_auxiliares.parametro_cartao.create');
-            Route::put('/cadastros/tabelas_auxiliares/parametro_cartao/{parametro_cartao}',[ParametroCartaoController::class, 'update'])
+            Route::put('/cadastros/tabelas_auxiliares/parametro_cartao/{parametro_cartao}', [ParametroCartaoController::class, 'update'])
                 ->name('tabelas_auxiliares.parametro_cartao.update');
             Route::get('/cadastros/tabelas_auxiliares/parametro_cartao/{parametro_cartao}/edit', [ParametroCartaoController::class, 'edit'])
                 ->name('tabelas_auxiliares.parametro_cartao.edit');
@@ -455,7 +450,7 @@ Route::group([
         // -----------------------------------------------
         Route::group([
             'middleware' => ['ajax.only']
-        ], function (){
+        ], function () {
             Route::get('/cadastros/tabelas_auxiliares/obs_fiscal', [ObsFiscalController::class, 'index'])
                 ->name('tabelas_auxiliares.obs_fiscal.index');
             Route::post('/cadastros/tabelas_auxiliares/obs_fiscal', [ObsFiscalController::class, 'store'])
@@ -467,29 +462,27 @@ Route::group([
         // -------------------------------------------------
         Route::group([
             'middleware' => ['ajax.only']
-        ], function(){
+        ], function () {
             Route::get('/cadastros/tabelas_auxiliares/tipos_pagamento', [App\Http\Controllers\Cadastro\TabelaAuxiliar\TiposPagamentoController::class, 'index'])
                 ->name('tabelas_auxiliares.tipos_pagamento.index');
             Route::get('/cadastros/tabelas_auxiliares/tipos_pagamento/table', [App\Http\Controllers\Cadastro\TabelaAuxiliar\TiposPagamentoController::class, 'table'])
                 ->name('tabelas_auxiliares.tipos_pagamento.table');
             Route::get('/cadastros/tabelas_auxiliares/tipos_pagamento/{pagamento}/edit', [App\Http\Controllers\Cadastro\TabelaAuxiliar\TiposPagamentoController::class, 'edit'])
                 ->name('tabelas_auxiliares.tipos_pagamento.edit');
-            Route::put('/cadastros/tabelas_auxiliares/tipos_pagamento/{pagamento}',[App\Http\Controllers\Cadastro\TabelaAuxiliar\TiposPagamentoController::class, 'update'])
+            Route::put('/cadastros/tabelas_auxiliares/tipos_pagamento/{pagamento}', [App\Http\Controllers\Cadastro\TabelaAuxiliar\TiposPagamentoController::class, 'update'])
                 ->name('tabelas_auxiliares.tipos_pagamento.update');
-            Route::put('/cadastros/tabelas_auxiliares/tipos_pagamento_novo',[App\Http\Controllers\Cadastro\TabelaAuxiliar\TiposPagamentoController::class, 'criar_form'])
+            Route::put('/cadastros/tabelas_auxiliares/tipos_pagamento_novo', [App\Http\Controllers\Cadastro\TabelaAuxiliar\TiposPagamentoController::class, 'criar_form'])
                 ->name('tabelas_auxiliares.tipos_pagamento.criar_form');
             Route::get('/cadastros/tabelas_auxiliares/tipos_pagamento/create', [App\Http\Controllers\Cadastro\TabelaAuxiliar\TiposPagamentoController::class, 'create'])
                 ->name('tabelas_auxiliares.tipos_pagamento.create');
-            Route::put('/cadastros/tabelas_auxiliares/tipos_pagamento/excluir/{pagamento}',[App\Http\Controllers\Cadastro\TabelaAuxiliar\TiposPagamentoController::class, 'excluir'])
-                ->name('tabelas_auxiliares.tipos_pagamento.excluir');        
+            Route::put('/cadastros/tabelas_auxiliares/tipos_pagamento/excluir/{pagamento}', [App\Http\Controllers\Cadastro\TabelaAuxiliar\TiposPagamentoController::class, 'excluir'])
+                ->name('tabelas_auxiliares.tipos_pagamento.excluir');
         });
 
         // ------------------------------
         // RELATORIOS
         // ------------------------------
-        Route::group([
-
-        ], function (){
+        Route::group([], function () {
             Route::get('/relatorios/cadastros', [\App\Http\Controllers\Cadastro\ReportController::class, 'index'])
                 ->name('report.cadastros.index')
                 ->middleware(['ajax.only']);
@@ -501,15 +494,14 @@ Route::group([
             Route::get('/relatorios/cadastros/produtos', [\App\Http\Controllers\Cadastro\ReportController::class, 'produtos'])
                 ->name('report.cadastros.produtos');
         });
-
     });
 
     //---------------------
     //       COMPRAS
     //---------------------
     Route::group([
-       'as' => 'compras.'
-    ], function(){
+        'as' => 'compras.'
+    ], function () {
 
         Route::get('/compras/entrada_nota/table', [EntradaNotaController::class, 'table'])
             ->name('nota_entrada.table');
@@ -525,11 +517,10 @@ Route::group([
             ->name('nota_entrada.create');
         Route::get('/compras/entrada_nota/{id}/edit', [EntradaNotaController::class, 'edit'])
             ->name('nota_entrada.edit');
-        Route::put('/compras/entrada_nota/{id}',[EntradaNotaController::class, 'update'])
+        Route::put('/compras/entrada_nota/{id}', [EntradaNotaController::class, 'update'])
             ->name('nota_entrada.update');
         Route::put('/compras/entrada_nota/excluir_nota/{id}', [EntradaNotaController::class, 'excluir_nota'])
             ->name('nota_entrada.excluir');
-
     });
 
     //---------------------
@@ -537,14 +528,14 @@ Route::group([
     //---------------------
     Route::group([
         'as' => 'vendas.'
-    ], function(){
+    ], function () {
 
         Route::get('/vendas', [OrcamentoController::class, 'index'])
             ->name('index');
 
         Route::group([
             'middleware' => ['ajax.only']
-        ], function(){
+        ], function () {
 
             // ORCAMENTO
             Route::get('/vendas/orcamento/table', [OrcamentoController::class, 'table'])
@@ -555,18 +546,18 @@ Route::group([
                 ->name('orcamento.create');
             Route::get('/vendas/orcamento/{orcamento}/edit', [OrcamentoController::class, 'edit'])
                 ->name('orcamento.edit');
-            Route::put('/vendas/orcamento/{orcamento}',[OrcamentoController::class, 'update'])
+            Route::put('/vendas/orcamento/{orcamento}', [OrcamentoController::class, 'update'])
                 ->name('orcamento.update');
 
 
             Route::get('/vendas/orcamento/total_vendas_hoje', [OrcamentoController::class, 'total_vendas_hoje'])
-                ->name('orcamento.total_vendas_hoje');   
+                ->name('orcamento.total_vendas_hoje');
 
             Route::get('/vendas/orcamento/vendas_mes_grafico', [OrcamentoController::class, 'vendas_mes_grafico'])
                 ->name('orcamento.vendas_mes_grafico');
 
             Route::get('/vendas/orcamento/orcamentos_criados_graf', [OrcamentoController::class, 'orcamentos_criados_graf'])
-                ->name('orcamento.orcamentos_criados_graf');    
+                ->name('orcamento.orcamentos_criados_graf');
 
             // faturar
             Route::post('/vendas/orcamento/store_faturar', [OrcamentoController::class, 'store_faturar'])
@@ -592,31 +583,31 @@ Route::group([
 
             // decidir o que vai fazer com o orçamento
             Route::get('/vendas/orcamento/finalizar/oque_fazer', [OrcamentoFinalizacaoController::class, 'oque_fazer'])
-                ->name('orcamento.finalizar.oque_fazer'); 
-                
+                ->name('orcamento.finalizar.oque_fazer');
+
             // caso tenha clicado em FATURAR no final do orçamento
             Route::get('/vendas/orcamento/finalizar/{orcamento}/clicou_faturou', [OrcamentoFinalizacaoController::class, 'clicou_faturou'])
-            ->name('orcamento.finalizar.clicou_faturou');
-            
+                ->name('orcamento.finalizar.clicou_faturou');
+
             // excluir um item do orçamento
             Route::get('/vendas/orcamento/excluir_item', [OrcamentoController::class, 'excluir_item'])
-            ->name('orcamento.excluir_item');
+                ->name('orcamento.excluir_item');
 
             // procura a forma de pagamento para e faz a validação se tem C.P personalizadas
             Route::get('/vendas/orcamento/pesquisa_forma_pagamento', [OrcamentoFinalizacaoController::class, 'pesquisa_forma_pagamento'])
-            ->name('orcamento.pesquisa_forma_pagamento');
+                ->name('orcamento.pesquisa_forma_pagamento');
 
             // faturar no momento de finalização
             Route::post('/vendas/orcamento/finalizar/store_faturar', [OrcamentoFinalizacaoController::class, 'store_faturar'])
                 ->name('orcamento.finalizar.store_faturar');
-                
+
             // emitir nfe na tela de finalização do orçamento/venda
             Route::post('/vendas/orcamento/finalizar/store_emitir_nota', [OrcamentoFinalizacaoController::class, 'store_emitir_nota'])
-            ->name('orcamento.finalizar.store_emitir_nota');
+                ->name('orcamento.finalizar.store_emitir_nota');
 
             // emitir nfce na tela de finalização do orçamento/venda
             Route::post('/vendas/orcamento/finalizar/store_emitir_notanfce', [OrcamentoFinalizacaoController::class, 'store_emitir_notanfce'])
-            ->name('orcamento.finalizar.store_emitir_notanfce');
+                ->name('orcamento.finalizar.store_emitir_notanfce');
 
             // finalizar
             Route::get('/vendas/orcamento/finalizar/create', [OrcamentoFinalizacaoController::class, 'create'])
@@ -626,24 +617,21 @@ Route::group([
 
             //Enviar email para clientes e usuarios
             Route::get('/vendas/orcamento/email_create', [OrcamentoController::class, 'email_create'])
-            ->name('orcamento.email_create');
+                ->name('orcamento.email_create');
             Route::post('/vendas/orcamento/email_store', [OrcamentoController::class, 'email_store'])
-            ->name('orcamento.email_store');   
-
+                ->name('orcamento.email_store');
         });
 
 
         // ------------------------------
         // RELATORIOS
         // ------------------------------
-        Route::group([
-
-        ], function(){
-            Route::get('/vendas/orcamento/{orcamento_id}/imprimir_cupom', [\App\Http\Controllers\Venda\ReportController::class,'cupom'])
+        Route::group([], function () {
+            Route::get('/vendas/orcamento/{orcamento_id}/imprimir_cupom', [\App\Http\Controllers\Venda\ReportController::class, 'cupom'])
                 ->name('report.cupom');
-            Route::get('/vendas/orcamento/{orcamento_id}/imprimir_transferencia', [\App\Http\Controllers\Venda\ReportController::class,'imprimir_transferencia'])
+            Route::get('/vendas/orcamento/{orcamento_id}/imprimir_transferencia', [\App\Http\Controllers\Venda\ReportController::class, 'imprimir_transferencia'])
                 ->name('report.imprimir_transferencia');
-            Route::get('/vendas/orcamento/{orcamento_id}/imprimir_orcamento', [\App\Http\Controllers\Venda\ReportController::class,'orcamento'])
+            Route::get('/vendas/orcamento/{orcamento_id}/imprimir_orcamento', [\App\Http\Controllers\Venda\ReportController::class, 'orcamento'])
                 ->name('report.orcamento');
 
             Route::get('/relatorios/vendas', [\App\Http\Controllers\Venda\ReportController::class, 'index'])
@@ -652,13 +640,10 @@ Route::group([
 
             Route::get('/relatorios/vendas/analise_vendas', [\App\Http\Controllers\Venda\ReportController::class, 'analise_vendas'])
                 ->name('report.analise_vendas');
-            
+
             Route::get('/relatorios/vendas/download_xml', [\App\Http\Controllers\Venda\ReportController::class, 'download_xml'])
                 ->name('report.download_xml');
-
-
         });
-
     });
 
     //----------------------
@@ -666,7 +651,7 @@ Route::group([
     //----------------------
     Route::group([
         'as' => 'fiscal.'
-    ], function(){
+    ], function () {
 
         Route::get('/fiscal/proximo_nro_nota', [NFeNFCeController::class, 'proximo_nro_nota'])
             ->name('proximo_nro_nota')
@@ -674,11 +659,11 @@ Route::group([
 
         /*INUTILIZAÇÃO FISCAL*/
         Route::get('/fiscal/inutilizacao', [NFeNFCeController::class, 'inutilizacao_create'])
-            ->name('inutilizacao_create')   
+            ->name('inutilizacao_create')
             ->middleware(['ajax.only']);
         Route::get('/fiscal/inutilizacao_tabela', [NFeNFCeController::class, 'inutilizacao_tabela_create'])
             ->name('inutilizacao_tabela_create');
-            
+
 
         /*GERAR NOTA FISCAL*/
         Route::get('/fiscal/{orcamento_id}/gerar_xml', [NFeNFCeController::class, 'create_gerar_xml'])
@@ -702,15 +687,15 @@ Route::group([
 
         /* CARTA CORRECAO NOTA FISCAL*/
         Route::get('/fiscal/{nf_id}/correcao_nfe', [NFeNFCeController::class, 'create_correcao_nfe'])
-            ->name('correcao_nfe_create')   
+            ->name('correcao_nfe_create')
             ->middleware(['ajax.only']);
         Route::post('/fiscal/correcao_nfe/store', [NFeNFCeController::class, 'store_correcao_nfe'])
             ->name('correcao_nfe_store')
             ->middleware(['ajax.only']);
 
-            /* IMPRIMIR CARTA CORRECAO NOTA FISCAL*/
+        /* IMPRIMIR CARTA CORRECAO NOTA FISCAL*/
         Route::get('/fiscal/imprimir_correcao_nfe', [NFeNFCeController::class, 'imprimir_correcao_nfe'])
-               ->name('correcao_nfe_imprimir');
+            ->name('correcao_nfe_imprimir');
 
         Route::get('/fiscal/cert_validade', [NFeNFCeController::class, 'apiFiscal_validade_certificado'])
             ->name('cert_validade')
@@ -723,39 +708,35 @@ Route::group([
         Route::get('/fiscal/danfe', [NFeNFCeController::class, 'apiFiscal_danfe'])
             ->name('danfe');
 
-        /* DADOS PARA TELA INICIAL*/    
+        /* DADOS PARA TELA INICIAL*/
         Route::get('/fiscal/nfe_nfce_criadas', [NFeNFCeController::class, 'nfe_nfce_criadas'])
             ->name('nfe_nfce_criadas');
 
         Route::get('/fiscal/nfe_nfce_canceladas', [NFeNFCeController::class, 'nfe_nfce_canceladas'])
             ->name('nfe_nfce_canceladas');
-            
+
         Route::get('/fiscal/nfe_nfce_enviadas', [NFeNFCeController::class, 'nfe_nfce_enviadas'])
-            ->name('nfe_nfce_enviadas');    
+            ->name('nfe_nfce_enviadas');
 
 
         // NFe
         Route::group([
             'as' => 'nfe.'
-        ], function() {
+        ], function () {
 
             Route::group([
                 'middleware' => ['ajax.only']
-            ], function() {
+            ], function () {
                 Route::get('/fiscal/nfe/status_servico', [NFeNFCeController::class, 'apiFiscal_status_servico'])
                     ->name('status_servico')
                     ->middleware(['ajax.only']);
             });
-
         });
 
         // NFCe
         Route::group([
             'as' => 'nfce.'
-        ], function() {
-
-        });
-
+        ], function () {});
     });
 
 
@@ -764,15 +745,15 @@ Route::group([
     // FINANCEIRO
     //-------------------------
     Route::group([
-       'as' => 'financeiro.'
-    ], function(){
+        'as' => 'financeiro.'
+    ], function () {
 
         // DESPESAS
         Route::get('/financeiro/despesa', [DespesaController::class, 'index'])
             ->name('despesa.index');
         Route::group([
             'middleware' => ['ajax.only']
-        ], function(){
+        ], function () {
             Route::get('/financeiro/despesa/table', [DespesaController::class, 'table'])
                 ->name('despesa.table');
             // CREATE
@@ -781,7 +762,7 @@ Route::group([
             Route::get('/financeiro/despesa/create', [DespesaController::class, 'create'])
                 ->name('despesa.create');
             // EDITAR
-            Route::put('/financeiro/despesa/{despesa}',[DespesaController::class, 'update'])
+            Route::put('/financeiro/despesa/{despesa}', [DespesaController::class, 'update'])
                 ->name('despesa.update');
             Route::get('/financeiro/despesa/{despesa}/edit', [DespesaController::class, 'edit'])
                 ->name('despesa.edit');
@@ -811,7 +792,7 @@ Route::group([
             ->name('receita.index');
         Route::group([
             'middleware' => ['ajax.only']
-        ], function(){
+        ], function () {
             Route::get('/financeiro/receita/table', [ReceitaController::class, 'table'])
                 ->name('receita.table');
             // CREATE
@@ -820,7 +801,7 @@ Route::group([
             Route::get('/financeiro/receita/create', [ReceitaController::class, 'create'])
                 ->name('receita.create');
             // EDITAR
-            Route::put('/financeiro/receita/{receita}',[ReceitaController::class, 'update'])
+            Route::put('/financeiro/receita/{receita}', [ReceitaController::class, 'update'])
                 ->name('receita.update');
             Route::get('/financeiro/receita/{receita}/edit', [ReceitaController::class, 'edit'])
                 ->name('receita.edit');
@@ -841,7 +822,7 @@ Route::group([
                 ->name('receita.estornar');
 
             Route::get('/financeiro/receita/total_receitas_em_atrasos', [ReceitaController::class, 'total_receitas_em_atrasos'])
-                ->name('receita.total_receitas_em_atrasos');    
+                ->name('receita.total_receitas_em_atrasos');
         });
 
 
@@ -877,118 +858,111 @@ Route::group([
 
         //CALCULO DE PEO
         Route::get('/financeiro/calculo_peo', [PeoController::class, 'index'])
-            ->name('calculo_peo.index');   
+            ->name('calculo_peo.index');
         Route::get('/financeiro/calculo_peo/table', [PeoController::class, 'table'])
             ->name('calculo_peo.peo.table');
         Route::get('/financeiro/calculo_peo/grafico_peo', [PeoController::class, 'grafico_peo'])
             ->name('calculo_peo.peo.grafico_peo')
-            ->middleware(['ajax.only']);     
+            ->middleware(['ajax.only']);
 
         // ------------------------------
         // RELATORIOS
         // ------------------------------
-        Route::group([
-            
-        ], function (){
+        Route::group([], function () {
             Route::get('/relatorios/financeiro', [\App\Http\Controllers\Financeiro\ReportController::class, 'index'])
                 ->name('report.financeiro.index')
                 ->middleware(['ajax.only']);
 
-                Route::get('/relatorios/financeiro/contas_receber', [\App\Http\Controllers\Financeiro\ReportController::class, 'contas_receber'])
+            Route::get('/relatorios/financeiro/contas_receber', [\App\Http\Controllers\Financeiro\ReportController::class, 'contas_receber'])
                 ->name('report.contas_receber');
-                Route::get('/relatorios/financeiro/contas_pagar', [\App\Http\Controllers\Financeiro\ReportController::class, 'contas_pagar'])
-                ->name('report.contas_pagar'); 
-                Route::get('/relatorios/financeiro/contas_recebidas', [\App\Http\Controllers\Financeiro\ReportController::class, 'contas_recebidas'])
-                ->name('report.contas_recebidas'); 
-                Route::get('/relatorios/financeiro/contas_pagas', [\App\Http\Controllers\Financeiro\ReportController::class, 'contas_pagas'])
-                ->name('report.contas_pagas');  
+            Route::get('/relatorios/financeiro/contas_pagar', [\App\Http\Controllers\Financeiro\ReportController::class, 'contas_pagar'])
+                ->name('report.contas_pagar');
+            Route::get('/relatorios/financeiro/contas_recebidas', [\App\Http\Controllers\Financeiro\ReportController::class, 'contas_recebidas'])
+                ->name('report.contas_recebidas');
+            Route::get('/relatorios/financeiro/contas_pagas', [\App\Http\Controllers\Financeiro\ReportController::class, 'contas_pagas'])
+                ->name('report.contas_pagas');
 
             // RECIBO DO PAGAMENTO FEITO PARA CLIENTE   
-             Route::get('/financeiro/receita/recibo_cliente', [ReceitaController::class, 'recibo_cliente'])
-            ->name('receita.recibo_cliente');
+            Route::get('/financeiro/receita/recibo_cliente', [ReceitaController::class, 'recibo_cliente'])
+                ->name('receita.recibo_cliente');
             // RECIBO DO PAGAMENTO FEITO PARA EMPRESA   
             Route::get('/financeiro/despesa/recibo_empresa', [DespesaController::class, 'recibo_empresa'])
-            ->name('despesa.recibo_empresa');
+                ->name('despesa.recibo_empresa');
 
 
             // CONTRATO PARA OS CLIENTES 
             Route::get('/documentos/contratos', [\App\Http\Controllers\Contrato\ContratoController::class, 'index'])
-            ->name('documentos.index');
+                ->name('documentos.index');
 
             //VERIFICAÇÃO DE ABAS PARA O CONTRATO
             Route::get('/documentos/verifica', [\App\Http\Controllers\Contrato\ContratoController::class, 'verificacao'])
-            ->name('documentos.verificacao');
+                ->name('documentos.verificacao');
 
             //DEMAIS ABAS PARA PREENCHIMENTO DE INFORMAÇÕES
             Route::get('/documentos/contratos/info_contratada', [\App\Http\Controllers\Contrato\ContratoController::class, 'info_contratada'])
-            ->name('documentos.info_contratada');
+                ->name('documentos.info_contratada');
             Route::get('/documentos/contratos/resp_legal', [\App\Http\Controllers\Contrato\ContratoController::class, 'resp_legal'])
-            ->name('documentos.resp_legal');
+                ->name('documentos.resp_legal');
             Route::get('/documentos/contratos/resp_legal_contratante', [\App\Http\Controllers\Contrato\ContratoController::class, 'resp_legal_contratante'])
-            ->name('documentos.resp_legal_contratante');
+                ->name('documentos.resp_legal_contratante');
             Route::get('/documentos/contratos/repre_vendedor', [\App\Http\Controllers\Contrato\ContratoController::class, 'repre_vendedor'])
-            ->name('documentos.repre_vendedor');
+                ->name('documentos.repre_vendedor');
             Route::get('/documentos/contratos/info_contrato', [\App\Http\Controllers\Contrato\ContratoController::class, 'info_contrato'])
-            ->name('documentos.info_contrato');
+                ->name('documentos.info_contrato');
             Route::get('/documentos/contratos/view_contrato', [\App\Http\Controllers\Contrato\ContratoController::class, 'view_contrato'])
-            ->name('documentos.view_contrato');
+                ->name('documentos.view_contrato');
 
             //ESPERANDO ATUALIZAÇÕES DO CONTRATO
             Route::get('/documentos/contratos/atua_contrato', [\App\Http\Controllers\Contrato\ContratoController::class, 'atu_contrato'])
-            ->name('documentos.atu_contrato');
+                ->name('documentos.atu_contrato');
             //VERIFICA DE MODO MANUAL SE O CONTRATO FOI APROVADO OU REJEITADO
             Route::post('/documentos/contratos/verifica_contrato', [\App\Http\Controllers\Contrato\ContratoController::class, 'verifica_contrato'])
-            ->name('documentos.verifica_contrato');
+                ->name('documentos.verifica_contrato');
 
             //CONTRATO EM VIGENCIA
             Route::get('/documentos/contratos/contrato_vigente', [\App\Http\Controllers\Contrato\ContratoController::class, 'contrato_vigente'])
-            ->name('documentos.contrato_vigente');
+                ->name('documentos.contrato_vigente');
 
             //CONTRATO REJEITADO
             Route::get('/documentos/contratos/contrato_rejeitado', [\App\Http\Controllers\Contrato\ContratoController::class, 'contrato_rejeitado'])
-            ->name('documentos.contrato_rejeitado');
+                ->name('documentos.contrato_rejeitado');
 
             //CONTRATO COM AS INFORMAÇÕES DO CLIENTE RESP.
             Route::get('/documentos/contratos/ver_contrato_info', [\App\Http\Controllers\Contrato\ContratoController::class, 'ver_contrato_info'])
-            ->name('documentos.ver_contrato_info'); 
+                ->name('documentos.ver_contrato_info');
 
             //VER CONTRATO E REALIZAR O DOWNLOAD
             Route::get('/documentos/contratos/ver_e_download', [\App\Http\Controllers\Contrato\ContratoController::class, 'ver_e_download'])
-            ->name('documentos.ver_e_download');
+                ->name('documentos.ver_e_download');
 
             //BAIXAR CONTRATO A SER ENVIADO
             Route::get('/documentos/contratos/baixar_contrato', [\App\Http\Controllers\Contrato\ContratoController::class, 'baixar_contrato'])
-            ->name('documentos.baixar_contrato');
+                ->name('documentos.baixar_contrato');
 
             //BAIXAR CONTRATO FINAL
             Route::get('/documentos/contratos/ver_contrato_final', [\App\Http\Controllers\Contrato\ContratoController::class, 'ver_contrato_final'])
-            ->name('documentos.ver_contrato_final');
+                ->name('documentos.ver_contrato_final');
 
             //GRAVANDO INFORMAÇÕES NO BANCO DE DADOS - ETAPAS E INFO EM ORDEM RESPECTIVAS COM AS ABAS
             Route::post('/documentos/contratos/gravar_info_1', [\App\Http\Controllers\Contrato\ContratoController::class, 'gravar_info_1'])
-            ->name('documentos.gravar_info_1');
+                ->name('documentos.gravar_info_1');
             Route::post('/documentos/contratos/gravar_info_2', [\App\Http\Controllers\Contrato\ContratoController::class, 'gravar_info_2'])
-            ->name('documentos.gravar_info_2');
+                ->name('documentos.gravar_info_2');
             Route::post('/documentos/contratos/gravar_info_3', [\App\Http\Controllers\Contrato\ContratoController::class, 'gravar_info_3'])
-            ->name('documentos.gravar_info_3');
+                ->name('documentos.gravar_info_3');
             Route::post('/documentos/contratos/gravar_info_4', [\App\Http\Controllers\Contrato\ContratoController::class, 'gravar_info_4'])
-            ->name('documentos.gravar_info_4');
+                ->name('documentos.gravar_info_4');
             Route::post('/documentos/contratos/gravar_info_5', [\App\Http\Controllers\Contrato\ContratoController::class, 'gravar_info_5'])
-            ->name('documentos.gravar_info_5');
+                ->name('documentos.gravar_info_5');
             Route::post('/documentos/contratos/gravar_info_6', [\App\Http\Controllers\Contrato\ContratoController::class, 'gravar_info_6'])
-            ->name('documentos.gravar_info_6');
-            
-
+                ->name('documentos.gravar_info_6');
         });
-
-
-
     });
 
-    Route::get('/util_view_logo_banco/{id}', [\App\Http\Controllers\UtilController::class,'viewLogoBanco'])
+    Route::get('/util_view_logo_banco/{id}', [\App\Http\Controllers\UtilController::class, 'viewLogoBanco'])
         ->name('util.logo.banco');
 
-    Route::get('/util_endereco_of_cep/{cep?}', [\App\Http\Controllers\UtilController::class,'getEnderecoOfCep'])
+    Route::get('/util_endereco_of_cep/{cep?}', [\App\Http\Controllers\UtilController::class, 'getEnderecoOfCep'])
         ->name('util.enderecoOfCep');
 
 
@@ -996,7 +970,7 @@ Route::group([
     //      SELECT2
     //----------------------
     Route::group([
-       'middleware' => ['ajax.only']
+        'middleware' => ['ajax.only']
     ], function () {
 
         Route::get('/select2_empresas', [Select2Controller::class, 'empresas'])
@@ -1006,16 +980,16 @@ Route::group([
             ->name('select2_produtos_grupos_tipos');
         //----
         Route::get('/select2_formas_pagamento_orcamento', [Select2Controller::class, 'formas_pagamentos_orcamento'])
-        ->name('select2_formas_pagamento_orcamento');
+            ->name('select2_formas_pagamento_orcamento');
         //----
         Route::get('/select2_pessoas', [Select2Controller::class, 'pessoas'])
             ->name('select2_pessoas');
         //----
         Route::get('/select2_clientes', [Select2Controller::class, 'clientes'])
-            ->name('select2_clientes'); 
+            ->name('select2_clientes');
         //----    
         Route::get('/select2_clientes_email', [Select2Controller::class, 'busca_email'])
-            ->name('select2_clientes_busca_email');    
+            ->name('select2_clientes_busca_email');
         //----
         Route::get('/select2_pessoas_classificacoes', [Select2Controller::class, 'classificacoes_pessoas'])
             ->name('select2_pessoas_classificacoes');
@@ -1037,7 +1011,7 @@ Route::group([
             ->name('select2_vendedores');
         //----
         Route::get('/select2_bancos', [Select2Controller::class, 'bancos'])
-        ->name('select2_bancos');
+            ->name('select2_bancos');
         //----
         Route::get('/select2_produtos', [Select2Controller::class, 'produtos'])
             ->name('select2_produtos');
@@ -1063,7 +1037,7 @@ Route::group([
             ->name('select2_bandeiras_cartao');
 
         Route::get('/select2_parametro_cartao', [Select2Controller::class, 'parametro_cartao'])
-            ->name('select2_parametro_cartao');    
+            ->name('select2_parametro_cartao');
 
         Route::get('/select2_centros_custos', [Select2Controller::class, 'centros_custos'])
             ->name('select2_centros_custos');
@@ -1118,17 +1092,14 @@ Route::group([
 
         Route::get('/select2_info_xml', [Select2Controller::class, 'info_xml'])
             ->name('select2_info_xml');
-            
+
         Route::get('/select2_transporte_frete_busca', [Select2Controller::class, 'busca_frete'])
-            ->name('select2_transporte_frete_busca');    
+            ->name('select2_transporte_frete_busca');
 
         Route::get('/select2_fiscal_ncm', [Select2Controller::class, 'fiscal_ncm'])
             ->name('select2_fiscal_ncm');
 
         Route::get('/select2_representantes', [Select2Controller::class, 'representantes'])
             ->name('select2_representantes');
-
     });
-
-
 });
