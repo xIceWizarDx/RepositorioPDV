@@ -465,10 +465,6 @@
             </div>
             <div id="multiplasFormasContainerModal">
               <div id="multiplasFormasListModal" class="mb-3"></div>
-              <button type="button" id="btnAdicionarFormaPagamentoModal" class="btn btn-info mb-3"
-                aria-label="Adicionar forma de pagamento">
-                <i class="fas fa-plus-circle"></i> Adicionar Forma de Pagamento
-              </button>
               <div>
                 <label class="form-label"><b>Parcelas Geradas</b></label>
                 <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
@@ -1350,6 +1346,13 @@
           }
 
           const idUnico = 'mpm_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+          const isFirst = $(prefix + '#multiplasFormasListModal .input-group').length === 0;
+
+          const removeBtn = isFirst
+            ? ''
+            : `<button class="btn btn-danger btn-remover-parcela" type="button" title="Remover parcela" aria-label="Remover parcela">
+                 <i class="fas fa-trash-alt"></i>
+               </button>`;
 
           const html = `
             <div class="input-group" data-id="${idUnico}">
@@ -1360,9 +1363,7 @@
             @endforeach
             </select>
             <input type="text" class="form-control valor-parcela-input text-end" placeholder="Valor R$" value="${valor}" inputmode="decimal" pattern="[0-9.,]*" required      aria-label="Valor da parcela" />
-            <button class="btn btn-danger btn-remover-parcela" type="button" title="Remover parcela" aria-label="Remover parcela">
-            <i class="fas fa-trash-alt"></i>
-            </button>
+            ${removeBtn}
             </div>
             `;
           $(prefix + '#multiplasFormasListModal').append(html);
@@ -1840,24 +1841,6 @@
         });
 
 
-        $(document)
-          .off('click', prefix + '#btnAdicionarFormaPagamentoModal')
-          .on('click', prefix + '#btnAdicionarFormaPagamentoModal', function() {
-            const lastGroup = $(prefix + '#multiplasFormasListModal .input-group').last();
-            const formaSelecionada = lastGroup.find('select.forma-pagamento-select').val();
-            const valorStrRaw = lastGroup.find('input.valor-parcela-input').val();
-
-            if (!formaSelecionada) {
-              showToast('Selecione a forma de pagamento.', 'warning');
-              return;
-            }
-            if (!valorStrRaw || !valorStrRaw.match(/\d/)) {
-              showToast('Informe um valor válido.', 'warning');
-              return;
-            }
-
-            atualizarParcelasMultiplasModal();
-          });
 
         // Botão "Cancelar" do modal: limpa os dados antes de fechar
         $(document)
