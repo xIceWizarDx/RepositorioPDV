@@ -493,6 +493,8 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
             aria-label="Cancelar">Cancelar</button>
+          <button type="button" class="btn btn-warning" id="modalBtnApenasOrcamento"
+            aria-label="Apenas Orçamento">Apenas Orçamento</button>
           <button type="button" class="btn btn-success" id="modalBtnConfirmarFinalizacao" disabled
             aria-label="Confirmar finalização">Confirmar Finalização</button>
         </div>
@@ -1543,21 +1545,26 @@
           const isFinalOpen = modalFinal.classList.contains('show');
           const isNFeOpen = modalNFe.classList.contains('show');
 
-          if (e.key === 'Escape') {
-            console.log('DEBUG tecla ESC detectada; finalizandoOrcamento=', finalizandoOrcamento, 'pendingOrcamentoId=', pendingOrcamentoId);
-          }
-
           if (
-            e.key === 'Escape' &&
             isFinalOpen &&
             !isNFeOpen &&
             pendingOrcamentoId === null &&
             !finalizandoOrcamento
           ) {
-            e.preventDefault();
-            console.log('DEBUG ESC: fechando modalMultiplasFormas antes de iniciar finalização');
-            clearFinalizacaoModal();
-            bootstrap.Modal.getInstance(modalFinal).hide();
+            if (e.key === 'Escape' || e.key === '-') {
+              e.preventDefault();
+              console.log('DEBUG', e.key, ': cancelando finalização');
+              clearFinalizacaoModal();
+              bootstrap.Modal.getInstance(modalFinal).hide();
+            } else if (e.key === '.') {
+              e.preventDefault();
+              console.log('DEBUG tecla .: apenas orçamento');
+              $(prefix + '#modalBtnApenasOrcamento').click();
+            } else if (e.key === '+') {
+              e.preventDefault();
+              console.log('DEBUG tecla +: confirmar finalização');
+              $(prefix + '#modalBtnConfirmarFinalizacao').click();
+            }
           }
         });
 
@@ -1847,6 +1854,110 @@
           .on('click', prefix + '#modalMultiplasFormas button.btn-secondary[data-bs-dismiss="modal"]', function() {
             clearFinalizacaoModal();
           });
+
+        $(prefix + '#modalBtnApenasOrcamento').off('click').on('click', function() {
+          if (isProcessandoFinalizacao) return;
+          isProcessandoFinalizacao = true;
+
+          const $btn = $(this);
+          if ($btn.prop('disabled')) {
+            isProcessandoFinalizacao = false;
+            return;
+          }
+          $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processando...');
+
+          if (parcelasPagamento.length === 0) {
+            showToast('Adicione ao menos uma forma de pagamento.', 'warning');
+            isProcessandoFinalizacao = false;
+            $btn.prop('disabled', false).html('Apenas Orçamento');
+            return;
+          }
+
+          const totalPagoCents = parcelasPagamento.reduce((acc, p) => acc + Math.round(p.valor * 100), 0);
+          const totalVenda = parseFloatStrict($(prefix + '#totalLiquidoValor').text().replace(/[^0-9,.-]/g, ''));
+          const totalVendaCents = Math.round(totalVenda * 100);
+
+          if (totalPagoCents !== totalVendaCents) {
+            showToast('A soma das formas de pagamento deve ser igual ao total da venda.', 'warning');
+            isProcessandoFinalizacao = false;
+            $btn.prop('disabled', false).html('Apenas Orçamento');
+            return;
+          }
+
+          const orc_itens = itensVenda.map(it => ({
+            produto_id: it.produto_id,
+            quantidade: it.qtd,
+            preco_vista: it.preco,
+            preco_prazo: it.preco
+          }));
+
+          const condicoes = parcelasPagamento.map(p => p.condicao).join('/');
+          const formas = parcelasPagamento
+            .map(p => p.forma.substring(0, 3))
+            .map(f => f.match(/^CRE/) ? 'CRE' : f)
+            .join('/');
+
+          const orc_parcelas = parcelasPagamento.map(p => ({
+            seq: p.seq,
+            valor: p.valor,
+            vcto: formatDateBRtoISO(p.vencimento),
+            forma: (p.forma.match(/^CRE/) ? 'CRE' : p.forma.substring(0, 3)),
+            div: p.condicao
+          }));
+
+          const payloadOrcamento = {
+            preco_item: $(prefix + '#tipoVendaInput2').val(),
+            cliente_id: $(prefix + '#clienteInput2').val(),
+            vendedor_id: $(prefix + '#vendedorInput2').val(),
+            comprador: $(prefix + '#compradorInput2').val()?.trim() || '',
+            tipo_venda: $(prefix + '#tipoVendaInput2').val(),
+            desconto_valor: parseFloatStrict($(prefix + '#descontosValor').text().replace(/[^0-9,.-]/g, '')),
+            desconto_porc: parseFloatStrict($(prefix + '#descontoPercent').val()),
+            acrescimo_valor: parseFloatStrict($(prefix + '#acrescimosValor').text().replace(/[^0-9,.-]/g, '')),
+            acrescimo_porc: 0,
+            forma_pagamento: formas,
+            condicao_pagamento: condicoes,
+            forma_somente_fiscal: '0',
+            orcamento_itens: orc_itens,
+            orcamento_parcelas: orc_parcelas
+          };
+
+          $.post('{{ route("vendas.orcamento.store") }}', payloadOrcamento)
+            .then(res => {
+              if (!res.insert_id) return Promise.reject(res.message || 'Erro ao criar orçamento.');
+
+              function limparVenda() {
+                itensVenda = [];
+                parcelasPagamento = [];
+                itemIdCounter = 0;
+                parcelaIdCounter = 0;
+                window.itensVenda = itensVenda;
+                window.parcelasPagamento = parcelasPagamento;
+
+                renderizarItensTabela();
+                clearFinalizacaoModal();
+                calcularTotais();
+
+                $('#descontoReais').val('0,00');
+                $('#descontoPercent').val('0,00');
+                $('#acrescimoReais').val('0,00');
+                $('#precoLivreInput').val('0,00');
+
+                $('#produtoSearchInput').val('').focus();
+              }
+
+              limparVenda();
+              bootstrap.Modal.getInstance(document.getElementById('modalMultiplasFormas')).hide();
+              showToast('Orçamento criado com sucesso.', 'success');
+            })
+            .catch(err => {
+              showToast(err || 'Erro ao criar orçamento.', 'danger');
+            })
+            .always(() => {
+              isProcessandoFinalizacao = false;
+              $btn.prop('disabled', false).html('Apenas Orçamento');
+            });
+        });
 
 
         isProcessandoFinalizacao = false;
