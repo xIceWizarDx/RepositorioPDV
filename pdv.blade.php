@@ -99,7 +99,7 @@
     min-height: 0;
   }
 
-.col-left-flex>.card:last-child {
+  .col-left-flex>.card:last-child {
     margin-top: 0;
   }
 
@@ -281,7 +281,7 @@
         </div>
         <div class="card-body d-flex flex-column">
           <div class="row g-3 align-items-end mb-3">
-            <div class="col-md-8">
+            <div class="col-md-10">
               <label class="form-label"><b>Produto</b> <small>[Ctrl+0]</small></label>
               <div class="input-group">
                 <input id="produtoSearchInput" type="text" class="form-control dropdown-toggle"
@@ -295,7 +295,7 @@
                   aria-label="Resultados da busca"></ul>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-2">
               <label class="form-label"><b>Qtde</b> <small>[Ctrl+1]</small></label>
               <input id="quantidadeInput" type="text" class="form-control text-center" value="1" inputmode="numeric"
                 pattern="[0-9]*" aria-label="Quantidade">
