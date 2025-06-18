@@ -492,11 +492,11 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-            aria-label="Cancelar">Cancelar</button>
+            aria-label="Cancelar">Cancelar (-)</button>
           <button type="button" class="btn btn-warning" id="modalBtnApenasOrcamento"
-            aria-label="Apenas Orçamento">Apenas Orçamento</button>
+            aria-label="Apenas Orçamento">Apenas Orçamento (.)</button>
           <button type="button" class="btn btn-success" id="modalBtnConfirmarFinalizacao" disabled
-            aria-label="Confirmar finalização">Confirmar Finalização</button>
+            aria-label="Confirmar finalização">Confirmar Finalização (+)</button>
         </div>
       </div>
     </div>
