@@ -1949,6 +1949,15 @@
               limparVenda();
               bootstrap.Modal.getInstance(document.getElementById('modalMultiplasFormas')).hide();
               showToast('Orçamento criado com sucesso.', 'success');
+
+              const orcamentoId = res.insert_id;
+              const printUrl = '{{ url('/vendas/orcamento') }}/' + orcamentoId + '/imprimir_orcamento';
+              const printWindow = window.open(printUrl, '_blank');
+              if (printWindow) {
+                printWindow.addEventListener('load', function() {
+                  printWindow.print();
+                });
+              }
             })
             .catch(err => {
               showToast(err || 'Erro ao criar orçamento.', 'danger');
