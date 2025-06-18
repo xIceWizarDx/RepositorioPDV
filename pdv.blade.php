@@ -1716,6 +1716,9 @@
             total_outros: 0
           };
 
+          // adiciona o valor de tef_rede ao payload
+          payloadNota.tef_rede = $('#tefRedeInput').val() || '';
+
           console.log('DEBUG emitirNFCe - payloadNota:', payloadNota);
 
           return $.post(
