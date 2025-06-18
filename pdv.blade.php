@@ -280,8 +280,8 @@
           <i class="fas fa-plus-circle"></i> Lançar Produtos
         </div>
         <div class="card-body d-flex flex-column">
-          <div class="row g-2 align-items-end mb-3">
-            <div class="col-md-7">
+          <div class="row g-3 align-items-end mb-3">
+            <div class="col-md-8">
               <label class="form-label"><b>Produto</b> <small>[Ctrl+0]</small></label>
               <div class="input-group">
                 <input id="produtoSearchInput" type="text" class="form-control dropdown-toggle"
@@ -295,12 +295,11 @@
                   aria-label="Resultados da busca"></ul>
               </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
               <label class="form-label"><b>Qtde</b> <small>[Ctrl+1]</small></label>
               <input id="quantidadeInput" type="text" class="form-control text-center" value="1" inputmode="numeric"
                 pattern="[0-9]*" aria-label="Quantidade">
             </div>
-            <div class="col-md-2"></div>
           </div>
 
           <div class="itens-venda-body flex-grow-1 p-0">
@@ -405,7 +404,7 @@
         </div>
         <div class="card-body">
 
-          <div class="row mb-2 align-items-end">
+          <div class="row g-3 align-items-end">
             <div class="col-md-4">
               <label class="form-label"><b>Cliente</b></label>
               <select id="clienteInput2" name="cliente_id" class="form-select">
@@ -435,7 +434,7 @@
             </div>
           </div>
 
-          <div class="row mb-2 d-none">
+          <div class="row g-3 d-none">
             <div class="col-md-7">
               <label class="form-label"><b>Comprador</b></label>
               <input id="compradorInput2" type="text" class="form-control" placeholder="(opcional)"
