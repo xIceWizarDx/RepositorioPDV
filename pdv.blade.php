@@ -554,7 +554,7 @@
           Deseja gerar a Nota Fiscal Eletrônica para essa venda?
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="btnNaoEmitirNFe" data-bs-dismiss="modal">Não</button>
+          <button type="button" class="btn btn-secondary" id="btnNaoEmitirNFe" data-bs-dismiss="modal">Não (0)</button>
           <button type="button" class="btn btn-primary" id="btnConfirmarEmitirNFe">Emitir NF-e (1)</button>
           <button type="button" class="btn btn-primary" id="btnConfirmarEmitirNFCE">Emitir NFC-e (2)</button>
         </div>
@@ -1370,33 +1370,12 @@
           }
         }
 
-        // Verifica se a forma de pagamento já foi escolhida
-        function formaPagamentoDuplicada(valorSelecionado, idAtual) {
-          let count = 0;
-          $(prefix + '#multiplasFormasListModal select.forma-pagamento-select').each(function() {
-            const val = $(this).val();
-            const grupoId = $(this).closest('.input-group').data('id');
-            if (val === valorSelecionado && grupoId !== idAtual) {
-              count++;
-            }
-          });
-          return count > 0;
-        }
-
         $(prefix + '#multiplasFormasListModal').on('change', 'select.forma-pagamento-select', function() {
           const $select = $(this);
           const $inputValor = $select.closest('.input-group').find('input.valor-parcela-input');
           const grupoId = $select.closest('.input-group').data('id');
 
           const valorSelecionado = $select.val();
-
-          if (valorSelecionado && formaPagamentoDuplicada(valorSelecionado, grupoId)) {
-            showToast('Essa forma de pagamento já está selecionada.', 'warning');
-            $select.val('');
-            $inputValor.val('');
-            $select.focus();
-            return;
-          }
 
           let valorFaltanteTexto = $(prefix + '#valorFaltanteDisplay').text();
           valorFaltanteTexto = valorFaltanteTexto.replace(/[^\d,.-]/g, '').replace(',', '.');
@@ -1616,11 +1595,6 @@
               e.preventDefault();
               document.getElementById('btnNaoEmitirNFe').click();
             }
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              bootstrap.Modal.getInstance(modalNFeEl).hide();
-              document.getElementById('btnConfirmarEmitirNFe').click();
-            }
             if (e.key === '1') {
               e.preventDefault();
               document.getElementById('btnConfirmarEmitirNFe').click();
@@ -1628,6 +1602,10 @@
             if (e.key === '2') {
               e.preventDefault();
               document.getElementById('btnConfirmarEmitirNFCE').click();
+            }
+            if (e.key === '0') {
+              e.preventDefault();
+              document.getElementById('btnNaoEmitirNFe').click();
             }
           };
 
@@ -2331,8 +2309,11 @@
             }
           }
           if (e.key === 'Escape') {
-            e.preventDefault();
-            $(prefix + '#btnCancelarOperacao').click();
+            const modalAberto = $('.modal.show').length > 0;
+            if (!modalAberto) {
+              e.preventDefault();
+              $(prefix + '#btnCancelarOperacao').click();
+            }
           }
           if (e.key === 'F4') {
             e.preventDefault();
