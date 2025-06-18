@@ -273,34 +273,99 @@
 <div class="container-fluid pdv-page-container mt-3 pdv-wrapper" style="min-height: 85vh;">
   <div class="row mb-3">
 
-    <div class="col-lg-7 col-left-flex">
+    <div class="col-lg-12 col-left-flex">
 
       <div class="card shadow-sm mb-3">
         <div class="card-header card-header-red">
           <i class="fas fa-plus-circle"></i> Lançar Produtos
         </div>
         <div class="card-body">
-          <div class="row g-2 align-items-end">
+          <div class="row g-2">
             <div class="col-md-7">
-              <label class="form-label"><b>Produto</b> <small>[Ctrl+0]</small></label>
-              <div class="input-group">
-                <input id="produtoSearchInput" type="text" class="form-control dropdown-toggle"
-                  placeholder="Digite nome, código ou ref." autocomplete="off" data-bs-toggle="dropdown"
-                  aria-expanded="false" aria-autocomplete="list" aria-haspopup="true" role="combobox"
-                  aria-owns="produtoSearchResults" aria-activedescendant="" autofocus>
-                <button class="input-group-text" id="btnModalBuscaProduto" tabindex="-1" title="Buscar produto">
-                  <i class="fa fa-search"></i>
-                </button>
-                <ul class="dropdown-menu w-100" id="produtoSearchResults" role="listbox"
-                  aria-label="Resultados da busca"></ul>
+              <div class="row g-2 align-items-end">
+                <div class="col-md-7">
+                  <label class="form-label"><b>Produto</b> <small>[Ctrl+0]</small></label>
+                  <div class="input-group">
+                    <input id="produtoSearchInput" type="text" class="form-control dropdown-toggle"
+                      placeholder="Digite nome, código ou ref." autocomplete="off" data-bs-toggle="dropdown"
+                      aria-expanded="false" aria-autocomplete="list" aria-haspopup="true" role="combobox"
+                      aria-owns="produtoSearchResults" aria-activedescendant="" autofocus>
+                    <button class="input-group-text" id="btnModalBuscaProduto" tabindex="-1" title="Buscar produto">
+                      <i class="fa fa-search"></i>
+                    </button>
+                    <ul class="dropdown-menu w-100" id="produtoSearchResults" role="listbox"
+                      aria-label="Resultados da busca"></ul>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label"><b>Qtde</b> <small>[Ctrl+1]</small></label>
+                  <input id="quantidadeInput" type="text" class="form-control text-center" value="1" inputmode="numeric"
+                    pattern="[0-9]*" aria-label="Quantidade">
+                </div>
+                <div class="col-md-2"></div>
               </div>
             </div>
-            <div class="col-md-3">
-              <label class="form-label"><b>Qtde</b> <small>[Ctrl+1]</small></label>
-              <input id="quantidadeInput" type="text" class="form-control text-center" value="1" inputmode="numeric"
-                pattern="[0-9]*" aria-label="Quantidade">
+            <div class="col-md-5">
+              <div class="card-header card-header-red-darker mb-3">
+                <i class="fas fa-file-invoice-dollar"></i> Fechamento da Venda
+              </div>
+              <div class="d-flex flex-column h-100">
+                <div class="mb-3">
+                  <a href="#" id="toggleDescontosFechamento" class="text-primary small" style="text-decoration:none;">
+                    <i class="fas fa-chevron-down"></i> Desconto / Acréscimo / Preço Livre
+                  </a>
+                  <div id="areaDescontosFechamento" class="mt-2 d-none">
+                    <div class="row g-2">
+                      <div class="col-6">
+                        <label class="form-label small mb-1">Desconto R$</label>
+                        <input id="descontoReais" type="text" class="form-control form-control-sm text-end" placeholder="0,00"
+                          inputmode="decimal" pattern="[0-9.,]*" aria-label="Desconto em reais">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small mb-1">Desconto %</label>
+                        <input id="descontoPercent" type="text" class="form-control form-control-sm text-end"
+                          placeholder="0,00" inputmode="decimal" pattern="[0-9.,]*" aria-label="Desconto em porcentagem">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small mb-1">Acréscimo R$</label>
+                        <input id="acrescimoReais" type="text" class="form-control form-control-sm text-end"
+                          placeholder="0,00" inputmode="decimal" pattern="[0-9.,]*" aria-label="Acréscimo em reais">
+                      </div>
+                      <div class="col-6">
+                        <label class="form-label small mb-1">Preço Livre R$</label>
+                        <input id="precoLivreInput" type="text" class="form-control form-control-sm text-end"
+                          placeholder="0,00" inputmode="decimal" pattern="[0-9.,]*" aria-label="Preço livre">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="total-display-area mb-3" aria-live="polite" aria-atomic="true">
+                  <div class="total-row"><span>Subtotal:</span> <span id="subtotalItensValor">R$ 0,00</span></div>
+                  <div class="total-row"><span>Descontos:</span> <span id="descontosValor">− R$ 0,00</span></div>
+                  <div class="total-row"><span>Acréscimos:</span> <span id="acrescimosValor">+ R$ 0,00</span></div>
+                  <hr class="my-1">
+                  <div class="total-row total-liquido"><span>Total Líquido</span> <span id="totalLiquidoValor">R$ 0,00</span>
+                  </div>
+                  <hr class="my-1">
+                  <div class="total-row faltam-pagar"><span>Faltam Pagar:</span> <span id="faltamPagarValor">R$ 0,00</span>
+                  </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-auto">
+                  <button id="btnReiniciarVenda" class="btn btn-outline-secondary" aria-label="Reiniciar venda">
+                    <i class="fas fa-history"></i> Reiniciar [F4]
+                  </button>
+                  <button id="btnCancelarOperacao" class="btn btn-danger" aria-label="Cancelar operação">
+                    <i class="fas fa-times-circle"></i> Cancelar [ESC]
+                  </button>
+                  <button id="btnFinalizarVenda" class="btn btn-success" aria-label="Finalizar venda">
+                    <i class="fas fa-check-circle"></i> Finalizar Venda
+                  </button>
+                </div>
+
+              </div>
             </div>
-            <div class="col-md-2"></div>
           </div>
         </div>
       </div>
@@ -334,70 +399,7 @@
 
     </div>
 
-    <div class="col-lg-5">
-      <div class="card shadow-sm h-100 d-flex flex-column">
-        <div class="card-header card-header-red-darker">
-          <i class="fas fa-file-invoice-dollar"></i> Fechamento da Venda
-        </div>
-        <div class="card-body flex-grow-1 d-flex flex-column">
 
-          <div class="mb-3">
-            <a href="#" id="toggleDescontosFechamento" class="text-primary small" style="text-decoration:none;">
-              <i class="fas fa-chevron-down"></i> Desconto / Acréscimo / Preço Livre
-            </a>
-            <div id="areaDescontosFechamento" class="mt-2 d-none">
-              <div class="row g-2">
-                <div class="col-6">
-                  <label class="form-label small mb-1">Desconto R$</label>
-                  <input id="descontoReais" type="text" class="form-control form-control-sm text-end" placeholder="0,00"
-                    inputmode="decimal" pattern="[0-9.,]*" aria-label="Desconto em reais">
-                </div>
-                <div class="col-6">
-                  <label class="form-label small mb-1">Desconto %</label>
-                  <input id="descontoPercent" type="text" class="form-control form-control-sm text-end"
-                    placeholder="0,00" inputmode="decimal" pattern="[0-9.,]*" aria-label="Desconto em porcentagem">
-                </div>
-                <div class="col-6">
-                  <label class="form-label small mb-1">Acréscimo R$</label>
-                  <input id="acrescimoReais" type="text" class="form-control form-control-sm text-end"
-                    placeholder="0,00" inputmode="decimal" pattern="[0-9.,]*" aria-label="Acréscimo em reais">
-                </div>
-                <div class="col-6">
-                  <label class="form-label small mb-1">Preço Livre R$</label>
-                  <input id="precoLivreInput" type="text" class="form-control form-control-sm text-end"
-                    placeholder="0,00" inputmode="decimal" pattern="[0-9.,]*" aria-label="Preço livre">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="total-display-area mb-3" aria-live="polite" aria-atomic="true">
-            <div class="total-row"><span>Subtotal:</span> <span id="subtotalItensValor">R$ 0,00</span></div>
-            <div class="total-row"><span>Descontos:</span> <span id="descontosValor">− R$ 0,00</span></div>
-            <div class="total-row"><span>Acréscimos:</span> <span id="acrescimosValor">+ R$ 0,00</span></div>
-            <hr class="my-1">
-            <div class="total-row total-liquido"><span>Total Líquido</span> <span id="totalLiquidoValor">R$ 0,00</span>
-            </div>
-            <hr class="my-1">
-            <div class="total-row faltam-pagar"><span>Faltam Pagar:</span> <span id="faltamPagarValor">R$ 0,00</span>
-            </div>
-          </div>
-
-          <div class="d-grid gap-2 mt-auto">
-            <button id="btnReiniciarVenda" class="btn btn-outline-secondary" aria-label="Reiniciar venda">
-              <i class="fas fa-history"></i> Reiniciar [F4]
-            </button>
-            <button id="btnCancelarOperacao" class="btn btn-danger" aria-label="Cancelar operação">
-              <i class="fas fa-times-circle"></i> Cancelar [ESC]
-            </button>
-            <button id="btnFinalizarVenda" class="btn btn-success" aria-label="Finalizar venda">
-              <i class="fas fa-check-circle"></i> Finalizar Venda
-            </button>
-          </div>
-
-        </div>
-      </div>
-    </div>
 
   </div>
 
