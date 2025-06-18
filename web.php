@@ -59,6 +59,9 @@ Route::group([
     Route::post('/vendas/orcamento', [OrcamentoController::class, 'store'])
          ->name('vendas.orcamento.store');
 
+    Route::get('/vendas/orcamento/{orcamento}/print', [OrcamentoController::class, 'print'])
+         ->name('vendas.orcamento.print');
+
          
 
     
