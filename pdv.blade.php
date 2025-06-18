@@ -1463,7 +1463,6 @@
 
           if (somaCents < totalCents) {
             if (ultimoAvisoParcelas !== 'menor') {
-              showToast('A soma das formas de pagamento é menor que o total da venda.', 'warning');
               ultimoAvisoParcelas = 'menor';
             }
           } else if (somaCents > totalCents) {
@@ -1948,7 +1947,6 @@
 
               limparVenda();
               bootstrap.Modal.getInstance(document.getElementById('modalMultiplasFormas')).hide();
-              window.open('{{ url('/vendas/orcamento') }}/' + res.insert_id + '/imprimir_orcamento', '_blank');
               showToast('Orçamento criado com sucesso.', 'success');
             })
             .catch(err => {
