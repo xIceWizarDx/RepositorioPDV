@@ -765,24 +765,31 @@
             } else {
               data.forEach(function(item, idx) {
                 html += `<li>
-                  <a href="#" class="dropdown-item${idx === 0 ? ' active' : ''}" 
-                  data-id="${item.id}" 
-                  data-preco_vista="${item.preco_vista}" 
-                  data-preco_prazo="${item.preco_prazo}" 
-                  data-estoque="${item.estoque}" 
-                  data-text="${item.text}"
-                  data-codigo_ref="${item.codigo_ref || ''}"
-                  data-cEAN="${item.cEAN || ''}">
-                  <strong>${item.text}</strong>
-                  <br>
-                  <small>Cód: ${item.codigo_ref || item.cEAN || '-'} | À vista: ${(item.preco_vista ? parseFloat(item.preco_vista).toLocaleString('pt-BR', { style: 'currency',   currency:           'BRL' }) : '-')} | A prazo: ${(item.preco_prazo ? parseFloat(item.preco_prazo).toLocaleString('pt-BR', { style: 'currency', 'currency':   'BRL' }) : '-')} | Estoque: $         {item.estoque ?? '-'}</small>
+                  <a href="#" class="dropdown-item${idx === 0 ? ' active' : ''}"
+                     data-id="${item.id}"
+                     data-preco_vista="${item.preco_vista}"
+                     data-preco_prazo="${item.preco_prazo}"
+                     data-estoque="${item.estoque}"
+                     data-text="${item.text}"
+                     data-codigo_ref="${item.codigo_ref || ''}"
+                     data-cEAN="${item.cEAN || ''}">
+                    <strong>${item.text}</strong><br>
+                    <small>
+                      Cód: ${item.codigo_ref || item.cEAN || '-'} |
+                      À vista: ${(item.preco_vista ? parseFloat(item.preco_vista).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-')} |
+                      A prazo: ${(item.preco_prazo ? parseFloat(item.preco_prazo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-')} |
+                      Estoque: ${item.estoque ?? '-'}
+                    </small>
                   </a>
                 </li>`;
               });
             }
             $(prefix + '#produtoSearchResults').html(html);
             produtoIndexAtivo = 0;
-            $(prefix + '#produtoSearchInput').attr('aria-activedescendant', $(prefix + '#produtoSearchResults .dropdown-item.active').attr('id') || '');
+            $(prefix + '#produtoSearchInput').attr(
+              'aria-activedescendant',
+              $(prefix + '#produtoSearchResults .dropdown-item.active').attr('id') || ''
+            );
             return;
           }
 
@@ -801,17 +808,21 @@
           } else {
             data.forEach(function(item, idx) {
               html += `<li>
-                <a href="#" class="dropdown-item${idx === 0 ? ' active' : ''}" 
-                data-id="${item.id}" 
-                data-preco_vista="${item.preco_vista}" 
-                data-preco_prazo="${item.preco_prazo}" 
-                data-estoque="${item.estoque}" 
-                data-text="${item.text}"
-                data-codigo_ref="${item.codigo_ref || ''}"
-                data-cEAN="${item.cEAN || ''}">
-                <strong>${item.text}</strong>
-                <br>
-                <small>Cód: ${item.codigo_ref || item.cEAN || '-'} | À vista: ${(item.preco_vista ? parseFloat(item.preco_vista).toLocaleString('pt-BR', { style: 'currency', currency:           'BRL' }) : '-')} | A prazo: ${(item.preco_prazo ? parseFloat(item.preco_prazo).toLocaleString('pt-BR', { style: 'currency', 'currency': 'BRL' }) : '-')} | Estoque: $         {item.estoque ?? '-'}</small>
+                <a href="#" class="dropdown-item${idx === 0 ? ' active' : ''}"
+                   data-id="${item.id}"
+                   data-preco_vista="${item.preco_vista}"
+                   data-preco_prazo="${item.preco_prazo}"
+                   data-estoque="${item.estoque}"
+                   data-text="${item.text}"
+                   data-codigo_ref="${item.codigo_ref || ''}"
+                   data-cEAN="${item.cEAN || ''}">
+                  <strong>${item.text}</strong><br>
+                  <small>
+                    Cód: ${item.codigo_ref || item.cEAN || '-'} |
+                    À vista: ${(item.preco_vista ? parseFloat(item.preco_vista).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-')} |
+                    A prazo: ${(item.preco_prazo ? parseFloat(item.preco_prazo).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-')} |
+                    Estoque: ${item.estoque ?? '-'}
+                  </small>
                 </a>
               </li>`;
             });
@@ -823,8 +834,12 @@
           dropdownInstance.show();
 
           produtoIndexAtivo = 0;
-          $(prefix + '#produtoSearchInput').attr('aria-activedescendant', $(prefix + '#produtoSearchResults .dropdown-item.active').attr('id') || '');
+          $(prefix + '#produtoSearchInput').attr(
+            'aria-activedescendant',
+            $(prefix + '#produtoSearchResults .dropdown-item.active').attr('id') || ''
+          );
         }
+
 
         $(prefix + '#produtoSearchInput').on('input', function() {
           const val = $(this).val().trim();
