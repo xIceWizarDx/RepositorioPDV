@@ -1966,7 +1966,8 @@
 
               limparVenda();
               bootstrap.Modal.getInstance(document.getElementById('modalMultiplasFormas')).hide();
-              const printUrl = '{{ url('/vendas/orcamento') }}/' + res.insert_id + '/print';
+              const basePrintUrl = "{{ route('vendas.orcamento.print', ['orcamento' => '__ID__']) }}";
+              const printUrl = basePrintUrl.replace('__ID__', res.insert_id);
               document.getElementById('printPreviewFrame').src = printUrl;
               bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPrintPreview')).show();
               showToast('Orçamento criado com sucesso.', 'success');
