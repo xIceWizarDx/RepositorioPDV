@@ -99,7 +99,7 @@
     min-height: 0;
   }
 
-.col-left-flex>.card:last-child {
+  .col-left-flex>.card:last-child {
     margin-top: 0;
   }
 
@@ -301,6 +301,8 @@
                 pattern="[0-9]*" aria-label="Quantidade">
             </div>
           </div>
+          <br>
+          <hr>
 
           <div class="itens-venda-body flex-grow-1 p-0">
             <div class="table-responsive" style="height: 100%;">
