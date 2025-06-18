@@ -1967,8 +1967,7 @@
               limparVenda();
               bootstrap.Modal.getInstance(document.getElementById('modalMultiplasFormas')).hide();
               const printUrl = '{{ url('/vendas/orcamento') }}/' + res.insert_id + '/print';
-              document.getElementById('printPreviewFrame').src = printUrl;
-              bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPrintPreview')).show();
+              window.open(printUrl, '_blank');
               showToast('Orçamento criado com sucesso.', 'success');
             })
             .catch(err => {
