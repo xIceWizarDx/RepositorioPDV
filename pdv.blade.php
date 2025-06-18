@@ -1612,7 +1612,7 @@
 
 
           modalNFeEl.addEventListener('shown.bs.modal', () => {
-            document.getElementById('btnConfirmarEmitirNFe').focus();
+            modalNFeEl.focus();
           });
 
 
