@@ -99,8 +99,8 @@
     min-height: 0;
   }
 
-  .col-left-flex>.card:last-child {
-    margin-top: auto;
+.col-left-flex>.card:last-child {
+    margin-top: 0;
   }
 
   .itens-venda-body {
@@ -275,12 +275,12 @@
 
     <div class="col-lg-7 col-left-flex">
 
-      <div class="card shadow-sm mb-3">
+      <div class="card shadow-sm flex-grow-itens">
         <div class="card-header card-header-red">
           <i class="fas fa-plus-circle"></i> Lançar Produtos
         </div>
-        <div class="card-body">
-          <div class="row g-2 align-items-end">
+        <div class="card-body d-flex flex-column">
+          <div class="row g-2 align-items-end mb-3">
             <div class="col-md-7">
               <label class="form-label"><b>Produto</b> <small>[Ctrl+0]</small></label>
               <div class="input-group">
@@ -302,33 +302,29 @@
             </div>
             <div class="col-md-2"></div>
           </div>
-        </div>
-      </div>
 
-      <div class="card shadow-sm flex-grow-itens">
-        <div class="card-header card-header-red">
-          <i class="fas fa-list-ul"></i> Itens da Venda
-        </div>
-        <div class="card-body p-0 itens-venda-body">
-          <div class="table-responsive" style="height: 100%;">
-            <table class="table table-striped mb-0" aria-label="Tabela de itens da venda">
-              <thead>
-                <tr>
-                  <th scope="col">#</th>
-                  <th scope="col">Produto</th>
-                  <th scope="col" class="text-center">Qtd</th>
-                  <th scope="col" class="text-end">Unit.</th>
-                  <th scope="col" class="text-end">Subtotal</th>
-                  <th scope="col" class="text-center">Ação</th>
-                </tr>
-              </thead>
-              <tbody id="listaItensVenda">
-                <tr id="nenhumItemMsgRow">
-                  <td colspan="6" class="text-center text-muted">Nenhum item.</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="itens-venda-body flex-grow-1 p-0">
+            <div class="table-responsive" style="height: 100%;">
+              <table class="table table-striped mb-0" aria-label="Tabela de itens da venda">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Produto</th>
+                    <th scope="col" class="text-center">Qtd</th>
+                    <th scope="col" class="text-end">Unit.</th>
+                    <th scope="col" class="text-end">Subtotal</th>
+                    <th scope="col" class="text-center">Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="listaItensVenda">
+                  <tr id="nenhumItemMsgRow">
+                    <td colspan="6" class="text-center text-muted">Nenhum item.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
+
         </div>
       </div>
 
