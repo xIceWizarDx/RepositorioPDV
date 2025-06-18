@@ -560,8 +560,8 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="btnNaoEmitirNFe" data-bs-dismiss="modal">Não</button>
-          <button type="button" class="btn btn-primary" id="btnConfirmarEmitirNFe">Emitir NF-e</button>
-          <button type="button" class="btn btn-primary" id="btnConfirmarEmitirNFCE">Emitir NFC-e</button>
+          <button type="button" class="btn btn-primary" id="btnConfirmarEmitirNFe">Emitir NF-e (1)</button>
+          <button type="button" class="btn btn-primary" id="btnConfirmarEmitirNFCE">Emitir NFC-e (2)</button>
         </div>
       </div>
     </div>
@@ -1616,22 +1616,32 @@
           });
 
 
-          modalNFeEl.addEventListener('hidden.bs.modal', () => {
-            console.log('DEBUG abrirModalConfirmarNFe: removendo second-backdrop');
-            document.querySelectorAll('.modal-backdrop.second-backdrop').forEach(el => el.remove());
-          });
-
-          modalNFeEl.addEventListener('keydown', function(e) {
+          const handleModalKeydown = function(e) {
             if (e.key === 'Escape') {
               e.preventDefault();
               document.getElementById('btnNaoEmitirNFe').click();
             }
             if (e.key === 'Enter') {
               e.preventDefault();
-              const modalNFeEl = document.getElementById('modalConfirmarNFe');
               bootstrap.Modal.getInstance(modalNFeEl).hide();
               document.getElementById('btnConfirmarEmitirNFe').click();
             }
+            if (e.key === '1') {
+              e.preventDefault();
+              document.getElementById('btnConfirmarEmitirNFe').click();
+            }
+            if (e.key === '2') {
+              e.preventDefault();
+              document.getElementById('btnConfirmarEmitirNFCE').click();
+            }
+          };
+
+          modalNFeEl.addEventListener('keydown', handleModalKeydown);
+
+          modalNFeEl.addEventListener('hidden.bs.modal', () => {
+            console.log('DEBUG abrirModalConfirmarNFe: removendo second-backdrop');
+            document.querySelectorAll('.modal-backdrop.second-backdrop').forEach(el => el.remove());
+            modalNFeEl.removeEventListener('keydown', handleModalKeydown);
           });
         }
 
