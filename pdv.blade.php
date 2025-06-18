@@ -1948,6 +1948,7 @@
 
               limparVenda();
               bootstrap.Modal.getInstance(document.getElementById('modalMultiplasFormas')).hide();
+              window.open('{{ url('/vendas/orcamento') }}/' + res.insert_id + '/imprimir_orcamento', '_blank');
               showToast('Orçamento criado com sucesso.', 'success');
             })
             .catch(err => {
