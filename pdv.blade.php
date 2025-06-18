@@ -562,6 +562,20 @@
     </div>
   </div>
 
+  <div class="modal fade" id="modalPrintPreview" tabindex="-1" aria-labelledby="modalPrintPreviewLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalPrintPreviewLabel">Orçamento</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body p-0">
+          <iframe id="printPreviewFrame" style="width:100%;height:80vh;border:0;"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
   @endsection
 
@@ -616,6 +630,10 @@
       $(function() {
 
         const prefix = '.pdv-wrapper ';
+
+        $('#modalPrintPreview').on('hidden.bs.modal', function() {
+          document.getElementById('printPreviewFrame').src = '';
+        });
 
         /* ================= Funções utilitárias ================= */
         // Converte datas no formato DD/MM/AAAA para o padrao ISO AAAA-MM-DD
@@ -1948,6 +1966,9 @@
 
               limparVenda();
               bootstrap.Modal.getInstance(document.getElementById('modalMultiplasFormas')).hide();
+              const printUrl = '{{ url('/vendas/orcamento') }}/' + res.insert_id + '/print';
+              document.getElementById('printPreviewFrame').src = printUrl;
+              bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPrintPreview')).show();
               showToast('Orçamento criado com sucesso.', 'success');
             })
             .catch(err => {

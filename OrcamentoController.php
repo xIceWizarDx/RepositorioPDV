@@ -1757,4 +1757,26 @@ class OrcamentoController extends Controller
 
     }
 
+    public function print(Orcamento $orcamento)
+    {
+        $orcamento = Orcamento::with(['cliente', 'vendedor'])->find($orcamento->id);
+
+        if (!$orcamento) {
+            abort(404);
+        }
+
+        $itens = DB::connection('db_client')
+            ->table('orcamentos_itens as i')
+            ->join('produtos as p', 'i.produto_id', '=', 'p.id')
+            ->select('p.descricao', 'i.quantidade', 'i.preco', 'i.subtotal')
+            ->where('i.orcamento_id', $orcamento->id)
+            ->orderBy('i.sequencial')
+            ->get();
+
+        return view('venda.orcamento.print', [
+            'orcamento' => $orcamento,
+            'itens' => $itens,
+        ]);
+    }
+
 }
