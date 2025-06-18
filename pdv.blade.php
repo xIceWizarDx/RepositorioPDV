@@ -1767,6 +1767,7 @@
 
           modalEl.addEventListener('hidden.bs.modal', () => {
             backdrop1.remove();
+            $(prefix + '#produtoSearchInput').focus();
           });
         });
 
@@ -2300,6 +2301,9 @@
 
         // Atalhos de teclado para agilizar o atendimento
         $(document).keydown(function(e) {
+          if (typeof e.isDefaultPrevented === 'function' && e.isDefaultPrevented()) {
+            return;
+          }
           if (e.ctrlKey) {
             if (e.key === '0') {
               e.preventDefault();
