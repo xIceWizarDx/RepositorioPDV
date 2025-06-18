@@ -2344,6 +2344,29 @@
             $(prefix + '#btnReiniciarVenda').click();
           }
         });
+
+        // Garante que o modal de confirmação de nota sempre reative os botões
+        // e possa ser fechado imediatamente com ESC
+        (function() {
+          const $modalNFe = $('#modalConfirmarNFe');
+
+          $modalNFe.on('shown.bs.modal', function() {
+            $('#btnConfirmarEmitirNFe').prop('disabled', false);
+            $('#btnConfirmarEmitirNFCE').prop('disabled', false);
+            $('#btnNaoEmitirNFe').prop('disabled', false);
+          });
+
+          document.addEventListener(
+            'keydown',
+            function(e) {
+              if (e.key === 'Escape' && $modalNFe.hasClass('show')) {
+                e.stopImmediatePropagation();
+                $modalNFe.modal('hide');
+              }
+            },
+            true
+          );
+        })();
       });
     })();
   </script>
