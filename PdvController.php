@@ -123,19 +123,28 @@ class PdvController extends Controller
     public function searchProducts(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'q' => 'nullable|string|max:100',
+            'q'    => 'nullable|string|max:100',
+            'all'  => 'sometimes|boolean',
+            'limit'=> 'sometimes|integer|min:1|max:5000',
         ]);
         if ($validator->fails()) {
             return response()->json([], 422);
         }
 
-        $term = trim($request->get('q', ''));
+        $term     = trim($request->get('q', ''));
         $empresaId = (int) session('empresa.id', 0);
+        $all      = $request->boolean('all', false);
+        $limit    = $request->get('limit');
 
-        Log::debug('[PdvController@searchProducts] Termo de busca:', ['q' => $term, 'empresaId' => $empresaId]);
+        Log::debug('[PdvController@searchProducts] Termo de busca:', [
+            'q' => $term,
+            'empresaId' => $empresaId,
+            'all' => $all,
+            'limit' => $limit
+        ]);
 
         try {
-            $produtos = \App\Models\Cadastro\Produto::orderBy('descricao')
+            $query = \App\Models\Cadastro\Produto::orderBy('descricao')
                 ->when($term, function ($q) use ($term) {
                     $q->where(function ($w) use ($term) {
                         $w->where('descricao', 'like', '%' . $term . '%')
@@ -143,9 +152,13 @@ class PdvController extends Controller
                             ->orWhere('cEAN', 'like', $term . '%')
                             ->orWhere('codigo_ref', 'like', $term . '%');
                     });
-                })
-                ->limit(20)
-                ->get();
+                });
+
+            if (!$all) {
+                $query->limit($limit ?? 20);
+            }
+
+            $produtos = $query->get();
 
             $precos = \App\Models\Cadastro\ProdutoPreco::where('empresa_id', $empresaId)
                 ->whereIn('produto_id', $produtos->pluck('id'))
