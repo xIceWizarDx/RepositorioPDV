@@ -552,12 +552,6 @@
         </div>
         <div class="modal-body">
           Deseja gerar a Nota Fiscal Eletrônica para essa venda?
-          <div id="nfeLoadingIndicator" class="d-none text-center mt-3">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Carregando...</span>
-            </div>
-            <p class="mt-2 mb-0">Aguardando faturamento...</p>
-          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="btnNaoEmitirNFe" data-bs-dismiss="modal">Não (0)</button>
@@ -671,16 +665,6 @@
         let finalizandoOrcamento = false;
         let nfeAwaitingEmission = false;
         let nfceAwaitingEmission = false;
-
-
-        function showNfeLoading(show) {
-          const $indicator = $('#nfeLoadingIndicator');
-          if (show) {
-            $indicator.removeClass('d-none');
-          } else {
-            $indicator.addClass('d-none');
-          }
-        }
 
 
         console.log('DEBUG: valor inicial #clienteInput2 ->', $(prefix + '#clienteInput2').val());
@@ -2101,7 +2085,10 @@
 
           (async () => {
             try {
-              const { orcamentoId, notaNumero } = await finalizarVendaSemNFe(
+              const {
+                orcamentoId,
+                notaNumero
+              } = await finalizarVendaSemNFe(
                 payloadOrcamento,
                 payloadFinalizacao,
                 payloadFaturamento
@@ -2164,7 +2151,6 @@
                   'DEBUG nfeAwaitingEmission=true, iniciando emitirNotaFiscal para',
                   orcamentoId
                 );
-                showNfeLoading(true);
                 try {
                   const msg = await emitirNotaFiscal(orcamentoId);
                   console.log('DEBUG emitirNotaFiscal sucesso:', msg);
@@ -2173,13 +2159,11 @@
                   console.error('DEBUG emitirNotaFiscal erro:', err);
                   showToast(err || 'Erro ao emitir nota.', 'danger');
                 }
-                showNfeLoading(false);
               } else if (nfceAwaitingEmission) {
                 console.log(
                   'DEBUG nfceAwaitingEmission=true, iniciando emitirNFCe para',
                   orcamentoId
                 );
-                showNfeLoading(true);
                 try {
                   const msg = await emitirNFCe(orcamentoId);
                   console.log('DEBUG emitirNFCe sucesso:', msg);
@@ -2188,7 +2172,6 @@
                   console.error('DEBUG emitirNFCe erro:', err);
                   showToast(err || 'Erro ao emitir nota.', 'danger');
                 }
-                showNfeLoading(false);
               } else {
                 console.log('DEBUG aguardando escolha do usuário para emitir NF-e/NFC-e');
               }
@@ -2213,11 +2196,9 @@
                 return;
               }
               $btn.prop('disabled', true);
-              $('#btnConfirmarEmitirNFCE').prop('disabled', true);
-              $('#btnNaoEmitirNFe').prop('disabled', true);
+
               console.log('DEBUG btnConfirmarEmitirNFe clicado');
               nfeAwaitingEmission = true;
-              showNfeLoading(true);
 
               if (pendingOrcamentoId) {
                 console.log('DEBUG imediato emitirNotaFiscal para', pendingOrcamentoId);
@@ -2232,7 +2213,6 @@
                   showToast(err || 'Erro ao emitir nota.', 'danger');
                   $btn.prop('disabled', false);
                 }
-                showNfeLoading(false);
                 isProcessandoEmissaoNFe = false;
               } else {
                 console.log('DEBUG aguardando faturamento antes de emitir NF-e');
@@ -2252,12 +2232,9 @@
                 return;
               }
               $btn.prop('disabled', true);
-              $('#btnConfirmarEmitirNFe').prop('disabled', true);
-              $('#btnNaoEmitirNFe').prop('disabled', true);
 
               console.log('DEBUG btnConfirmarEmitirNFCE clicado');
               nfceAwaitingEmission = true;
-              showNfeLoading(true);
 
               if (pendingOrcamentoId) {
                 console.log('DEBUG imediato emitirNFCe para', pendingOrcamentoId);
@@ -2272,7 +2249,6 @@
                   showToast(err || 'Erro ao emitir nota.', 'danger');
                   $btn.prop('disabled', false);
                 }
-                showNfeLoading(false);
                 isProcessandoEmissaoNFe = false;
               } else {
                 console.log('DEBUG aguardando faturamento antes de emitir NFC-e');
@@ -2290,7 +2266,6 @@
               console.log('DEBUG btnNaoEmitirNFe clicado');
               nfeAwaitingEmission = false;
               nfceAwaitingEmission = false;
-              showNfeLoading(false);
               const modalNFeEl = document.getElementById('modalConfirmarNFe');
               bootstrap.Modal.getInstance(modalNFeEl).hide();
             });
@@ -2299,7 +2274,6 @@
             $('#btnConfirmarEmitirNFe').prop('disabled', false);
             $('#btnConfirmarEmitirNFCE').prop('disabled', false);
             $('#btnNaoEmitirNFe').prop('disabled', false);
-            showNfeLoading(false);
           });
 
         });
