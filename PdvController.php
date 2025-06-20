@@ -203,4 +203,11 @@ class PdvController extends Controller
             'debugMsg'        => $debugMsg
         ]);
     }
+
+    public function productStock($id)
+    {
+        $empresaId = (int) session('empresa.id', 0);
+        $estoque = \App\Models\Cadastro\Produto::getEstoqueOfProduto($empresaId, $id);
+        return response()->json(['id' => $id, 'estoque' => $estoque]);
+    }
 }
