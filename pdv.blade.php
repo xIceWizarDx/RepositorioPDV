@@ -616,6 +616,7 @@
       $(function() {
 
         const prefix = '.pdv-wrapper ';
+        const productStockBaseUrl = '{{ url('/pdv/product-stock') }}';
 
         /* ================= Funções utilitárias ================= */
         // Converte datas no formato DD/MM/AAAA para o padrao ISO AAAA-MM-DD
@@ -722,6 +723,7 @@
         }
 
         carregarProdutosCache();
+        setInterval(carregarProdutosCache, 30000);
 
         // Filtra produtos já carregados em cache
         function buscarProdutosNoCache(query) {
@@ -1262,55 +1264,64 @@
             adicionandoProduto = false;
             return;
           }
-          const estoqueNum = parseInt(prod.estoque);
-          if (isNaN(estoqueNum) || estoqueNum <= 0) {
-            showToast('Produto com estoque insuficiente.', 'warning');
-            adicionandoProduto = false;
-            return;
-          }
 
-          const qtdInput = parseInt($(prefix + '#quantidadeInput').val(), 10) || 1;
-          const itemExistenteIndex = itensVenda.findIndex(item => item.produto_id === prod.id);
+          $.get(productStockBaseUrl + '/' + prod.id)
+            .done(function(resp) {
+              const estoqueNum = parseInt(resp.estoque);
+              if (isNaN(estoqueNum) || estoqueNum <= 0) {
+                showToast('Produto com estoque insuficiente.', 'warning');
+                return;
+              }
 
-          if (itemExistenteIndex > -1) {
-            const itemAtual = itensVenda[itemExistenteIndex];
-            let novaQtd = itemAtual.qtd + qtdInput;
+              prod.estoque = estoqueNum;
 
-            if (novaQtd > estoqueNum) {
-              showToast(`Quantidade solicitada ultrapassa o estoque disponível (${estoqueNum}). Ajustado para o máximo disponível.`, 'warning');
-              novaQtd = estoqueNum;
-            }
+              const qtdInput = parseInt($(prefix + '#quantidadeInput').val(), 10) || 1;
+              const itemExistenteIndex = itensVenda.findIndex(item => item.produto_id === prod.id);
 
-            itemAtual.qtd = novaQtd;
-            itemAtual.subtotal = itemAtual.preco * itemAtual.qtd;
-            itensVenda[itemExistenteIndex] = itemAtual;
-          } else {
-            let qtdFinal = qtdInput > estoqueNum ? estoqueNum : qtdInput;
-            if (qtdInput > estoqueNum) {
-              showToast(`Quantidade solicitada ultrapassa o estoque disponível (${estoqueNum}). Ajustado para o máximo disponível.`, 'warning');
-            }
-            const preco = prod.preco_vista ? parseFloat(prod.preco_vista) : 0;
-            itensVenda.push({
-              id: itemIdCounter++,
-              produto_id: prod.id,
-              descricao: prod.text,
-              qtd: qtdFinal,
-              preco: preco,
-              subtotal: preco * qtdFinal
+              if (itemExistenteIndex > -1) {
+                const itemAtual = itensVenda[itemExistenteIndex];
+                let novaQtd = itemAtual.qtd + qtdInput;
+
+                if (novaQtd > estoqueNum) {
+                  showToast(`Quantidade solicitada ultrapassa o estoque disponível (${estoqueNum}). Ajustado para o máximo disponível.`, 'warning');
+                  novaQtd = estoqueNum;
+                }
+
+                itemAtual.qtd = novaQtd;
+                itemAtual.subtotal = itemAtual.preco * itemAtual.qtd;
+                itensVenda[itemExistenteIndex] = itemAtual;
+              } else {
+                let qtdFinal = qtdInput > estoqueNum ? estoqueNum : qtdInput;
+                if (qtdInput > estoqueNum) {
+                  showToast(`Quantidade solicitada ultrapassa o estoque disponível (${estoqueNum}). Ajustado para o máximo disponível.`, 'warning');
+                }
+                const preco = prod.preco_vista ? parseFloat(prod.preco_vista) : 0;
+                itensVenda.push({
+                  id: itemIdCounter++,
+                  produto_id: prod.id,
+                  descricao: prod.text,
+                  qtd: qtdFinal,
+                  preco: preco,
+                  subtotal: preco * qtdFinal
+                });
+              }
+
+              window.itensVenda = itensVenda;
+              renderizarItensTabela();
+              calcularTotais();
+              $(prefix + '#quantidadeInput').val('1');
+              console.log('Item adicionado →', itensVenda);
+
+              produtoFoiAdicionado = true;
+            })
+            .fail(function() {
+              showToast('Erro ao verificar estoque do produto.', 'danger');
+            })
+            .always(function() {
+              setTimeout(() => {
+                adicionandoProduto = false;
+              }, 100);
             });
-          }
-
-          window.itensVenda = itensVenda;
-          renderizarItensTabela();
-          calcularTotais();
-          $(prefix + '#quantidadeInput').val('1');
-          console.log('Item adicionado →', itensVenda);
-
-          produtoFoiAdicionado = true;
-
-          setTimeout(() => {
-            adicionandoProduto = false;
-          }, 100);
         }
 
         $(prefix + '#btnReiniciarVenda').click(function() {

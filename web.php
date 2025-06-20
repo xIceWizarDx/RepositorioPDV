@@ -55,6 +55,9 @@ Route::group([
     Route::get('/pdv/search-products', [PdvController::class, 'searchProducts'])
         ->name('pdv.search.products');
 
+    Route::get('/pdv/product-stock/{id}', [PdvController::class, 'productStock'])
+        ->name('pdv.product.stock');
+
     // criar orçamento (via AJAX no PDV)
     Route::post('/vendas/orcamento', [OrcamentoController::class, 'store'])
         ->name('vendas.orcamento.store');
