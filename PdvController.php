@@ -203,17 +203,4 @@ class PdvController extends Controller
             'debugMsg'        => $debugMsg
         ]);
     }
-
-    public function getStocks(Request $request)
-    {
-        $ids = (array) $request->input('ids', []);
-        $empresaId = (int) session('empresa.id', 0);
-
-        $estoques = [];
-        foreach ($ids as $id) {
-            $estoques[$id] = \App\Models\Cadastro\Produto::getEstoqueOfProduto($empresaId, $id);
-        }
-
-        return response()->json($estoques);
-    }
 }
