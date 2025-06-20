@@ -692,13 +692,22 @@
         const parseFloatStrict = s => parseFloat(String(s).replace(/\./g, '').replace(',', '.')) || 0;
         const onlyNumberFloat = $el => $el.val($el.val().replace(/[^0-9,]/g, '').replace(/,(?=.*,)/g, ''));
 
+        // Utilitário para limitar a frequência de execução de funções
+        const debounce = (fn, delay = 300) => {
+          let timer;
+          return function(...args) {
+            const context = this;
+            clearTimeout(timer);
+            timer = setTimeout(() => fn.apply(context, args), delay);
+          };
+        };
+
         let itensVenda = [],
           itemIdCounter = 0;
         let parcelasPagamento = [],
           parcelaIdCounter = 0;
         let isProcessandoFinalizacao = false;
         let isProcessandoEmissaoNFe = false;
-        let debounceTimeout = null;
         let produtoIndexAtivo = 0;
         let produtoFoiAdicionado = false;
         let adicionandoProduto = false;
@@ -747,12 +756,16 @@
 
         // Consulta produtos no backend conforme o termo de busca
         function buscarProdutos(term) {
-          return $.get('{{ route("pdv.search.products") }}', {
-              q: term || ''
-            })
-            .done(function(data) {
-              window.produtosCache = data;
-            });
+          return $.ajax({
+            url: '{{ route("pdv.search.products") }}',
+            method: 'GET',
+            dataType: 'json',
+            cache: false,
+            data: {
+              q: term || '',
+              t: Date.now() // evita cache em navegadores/proxies
+            }
+          });
         }
 
         // Atualiza o dropdown de produtos exibindo os resultados obtidos
@@ -841,18 +854,26 @@
         }
 
 
+        const realizarBuscaAjax = debounce(function(term, inputEl) {
+          buscarProdutos(term)
+            .done(function(data) {
+              preencherResultadosDropdown(data, term);
+              bootstrap.Dropdown.getOrCreateInstance(inputEl).show();
+            })
+            .fail(function() {
+              showToast('Erro ao buscar produtos.', 'danger');
+            });
+        }, 300);
+
         $(prefix + '#produtoSearchInput').on('input', function() {
           const val = $(this).val().trim();
+          const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(this);
           if (!val) {
             $(prefix + '#produtoSearchResults').empty();
-            const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(this);
             dropdownInstance.hide();
             return;
           }
-          const resultados = buscarProdutosNoCache(val);
-          preencherResultadosDropdown(resultados, val);
-          const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(this);
-          dropdownInstance.show();
+          realizarBuscaAjax(val, this);
         });
 
         $(prefix + '#produtoSearchInput').on('click focus', function() {
@@ -883,34 +904,39 @@
               return;
             }
 
-            const data = buscarProdutosNoCache(val);
-            const codigosProdutos = data.filter(p => {
-              const cods = [p.codigo_ref, p.cEAN].map(c => c ? String(c) : '').filter(Boolean);
-              return cods.includes(val);
-            });
+            buscarProdutos(val)
+              .done(function(data) {
+                const codigosProdutos = data.filter(p => {
+                  const cods = [p.codigo_ref, p.cEAN].map(c => c ? String(c) : '').filter(Boolean);
+                  return cods.includes(val);
+                });
 
-            let prodParaAdicionar = null;
-            if (codigosProdutos.length > 0) {
-              prodParaAdicionar = codigosProdutos[0];
-            } else {
-              const nomeExato = data.find(p => p.text.toLowerCase() === val.toLowerCase());
-              if (nomeExato) prodParaAdicionar = nomeExato;
-            }
+                let prodParaAdicionar = null;
+                if (codigosProdutos.length > 0) {
+                  prodParaAdicionar = codigosProdutos[0];
+                } else {
+                  const nomeExato = data.find(p => p.text.toLowerCase() === val.toLowerCase());
+                  if (nomeExato) prodParaAdicionar = nomeExato;
+                }
 
-            if (prodParaAdicionar) {
-              adicionarItemPDV({
-                id: prodParaAdicionar.id,
-                text: prodParaAdicionar.text,
-                preco_vista: prodParaAdicionar.preco_vista,
-                preco_prazo: prodParaAdicionar.preco_prazo,
-                estoque: prodParaAdicionar.estoque
+                if (prodParaAdicionar) {
+                  adicionarItemPDV({
+                    id: prodParaAdicionar.id,
+                    text: prodParaAdicionar.text,
+                    preco_vista: prodParaAdicionar.preco_vista,
+                    preco_prazo: prodParaAdicionar.preco_prazo,
+                    estoque: prodParaAdicionar.estoque
+                  });
+                  $(prefix + '#produtoSearchInput').val('').focus();
+                  $(prefix + '#produtoSearchResults').empty();
+                } else {
+                  preencherResultadosDropdown(data, val);
+                  showToast('Produto não encontrado para o valor exato digitado.', 'warning');
+                }
+              })
+              .fail(function() {
+                showToast('Erro ao buscar produtos.', 'danger');
               });
-              $(prefix + '#produtoSearchInput').val('').focus();
-              $(prefix + '#produtoSearchResults').empty();
-            } else {
-              preencherResultadosDropdown(data, val);
-              showToast('Produto não encontrado para o valor exato digitado.', 'warning');
-            }
           }
 
           const itens = $(prefix + '#produtoSearchResults .dropdown-item');
