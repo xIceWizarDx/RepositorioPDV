@@ -1642,34 +1642,36 @@
         }
 
 
-        function finalizarVendaSemNFe(payloadOrc, payloadFin, payloadFat) {
+        async function finalizarVendaSemNFe(payloadOrc, payloadFin, payloadFat) {
           console.log('DEBUG finalizarVendaSemNFe - payloadOrcamento:', payloadOrc);
           console.log('DEBUG finalizarVendaSemNFe - payloadFinalizacao:', payloadFin);
           console.log('DEBUG finalizarVendaSemNFe - payloadFaturamento:', payloadFat);
 
-          return $.post('{{ route("vendas.orcamento.store") }}', payloadOrc)
-            .then(res => {
-              if (!res.insert_id) return Promise.reject(res.message || 'Erro ao criar orçamento.');
-              payloadFin.orcamento_id = res.insert_id;
-              payloadFat.id_orcamento = res.insert_id;
-              return $.post('{{ route("vendas.orcamento.finalizar.store") }}', payloadFin);
-            })
-            .then(res2 => {
-              if (res2.status !== 'OK') return Promise.reject(res2.message || 'Erro ao finalizar orçamento.');
-              return $.post('{{ route("vendas.orcamento.finalizar.store_faturar") }}', payloadFat);
-            })
-            .then(res3 => {
-              console.log('DEBUG faturar response:', res3);
-              if (res3.status !== 'OK') return Promise.reject(res3.data || 'Erro ao faturar.');
-              return Promise.resolve({
-                orcamentoId: payloadFat.id_orcamento,
-                notaNumero: res3.data
-              });
-            });
+          try {
+            const res = await $.post('{{ route("vendas.orcamento.store") }}', payloadOrc);
+            if (!res.insert_id) throw (res.message || 'Erro ao criar orçamento.');
+            payloadFin.orcamento_id = res.insert_id;
+            payloadFat.id_orcamento = res.insert_id;
+
+            const res2 = await $.post('{{ route("vendas.orcamento.finalizar.store") }}', payloadFin);
+            if (res2.status !== 'OK') throw (res2.message || 'Erro ao finalizar orçamento.');
+
+            const res3 = await $.post('{{ route("vendas.orcamento.finalizar.store_faturar") }}', payloadFat);
+            console.log('DEBUG faturar response:', res3);
+            if (res3.status !== 'OK') throw (res3.data || 'Erro ao faturar.');
+
+            return {
+              orcamentoId: payloadFat.id_orcamento,
+              notaNumero: res3.data
+            };
+          } catch (err) {
+            console.error('DEBUG finalizarVendaSemNFe erro:', err);
+            throw err;
+          }
         }
 
 
-        function emitirNotaFiscal(orcamentoId) {
+        async function emitirNotaFiscal(orcamentoId) {
           console.log('DEBUG emitirNotaFiscal: iniciando para orcamentoId=', orcamentoId);
 
           const payloadNota = {
@@ -1687,26 +1689,25 @@
 
           console.log('DEBUG emitirNotaFiscal - payloadNota:', payloadNota);
 
-          return $.post(
+          try {
+            const res4 = await $.post(
               '{{ route("vendas.orcamento.finalizar.store_emitir_nota") }}',
               payloadNota
-            )
-            .then(res4 => {
-              console.log('DEBUG emitirNotaFiscal response:', res4);
-              if (res4.status !== 'OK') {
-                console.log('DEBUG emitirNotaFiscal: falha na resposta');
-                return Promise.reject(res4.data);
-              }
-              console.log('DEBUG emitirNotaFiscal: sucesso');
-              return res4.data;
-            })
-            .catch(err => {
-              console.error('DEBUG emitirNotaFiscal erro:', err);
-              return Promise.reject(err);
-            });
+            );
+            console.log('DEBUG emitirNotaFiscal response:', res4);
+            if (res4.status !== 'OK') {
+              console.log('DEBUG emitirNotaFiscal: falha na resposta');
+              throw res4.data;
+            }
+            console.log('DEBUG emitirNotaFiscal: sucesso');
+            return res4.data;
+          } catch (err) {
+            console.error('DEBUG emitirNotaFiscal erro:', err);
+            throw err;
+          }
         }
 
-        function emitirNFCe(orcamentoId) {
+        async function emitirNFCe(orcamentoId) {
           console.log('DEBUG emitirNFCe: iniciando para orcamentoId=', orcamentoId);
 
           const payloadNota = {
@@ -1724,23 +1725,22 @@
 
           console.log('DEBUG emitirNFCe - payloadNota:', payloadNota);
 
-          return $.post(
+          try {
+            const res4 = await $.post(
               '{{ route("vendas.orcamento.finalizar.store_emitir_notanfce") }}',
               payloadNota
-            )
-            .then(res4 => {
-              console.log('DEBUG emitirNFCe response:', res4);
-              if (res4.status !== 'OK') {
-                console.log('DEBUG emitirNFCe: falha na resposta');
-                return Promise.reject(res4.data);
-              }
-              console.log('DEBUG emitirNFCe: sucesso');
-              return res4.data;
-            })
-            .catch(err => {
-              console.error('DEBUG emitirNFCe erro:', err);
-              return Promise.reject(err);
-            });
+            );
+            console.log('DEBUG emitirNFCe response:', res4);
+            if (res4.status !== 'OK') {
+              console.log('DEBUG emitirNFCe: falha na resposta');
+              throw res4.data;
+            }
+            console.log('DEBUG emitirNFCe: sucesso');
+            return res4.data;
+          } catch (err) {
+            console.error('DEBUG emitirNFCe erro:', err);
+            throw err;
+          }
         }
 
 
@@ -2083,11 +2083,13 @@
           finalizandoOrcamento = true;
           console.log('DEBUG finalizandoOrcamento set to true');
 
-          finalizarVendaSemNFe(payloadOrcamento, payloadFinalizacao, payloadFaturamento)
-            .then(({
-              orcamentoId,
-              notaNumero
-            }) => {
+          (async () => {
+            try {
+              const { orcamentoId, notaNumero } = await finalizarVendaSemNFe(
+                payloadOrcamento,
+                payloadFinalizacao,
+                payloadFaturamento
+              );
               console.log(
                 'DEBUG finalizarVendaSemNFe sucesso →',
                 'orcamentoId:', orcamentoId,
@@ -2146,45 +2148,42 @@
                   'DEBUG nfeAwaitingEmission=true, iniciando emitirNotaFiscal para',
                   orcamentoId
                 );
-                emitirNotaFiscal(orcamentoId)
-                  .then(msg => {
-                    console.log('DEBUG emitirNotaFiscal sucesso:', msg);
-                    showToast(msg, 'success');
-                  })
-                  .catch(err => {
-                    console.error('DEBUG emitirNotaFiscal erro:', err);
-                    showToast(err || 'Erro ao emitir nota.', 'danger');
-                  });
+                try {
+                  const msg = await emitirNotaFiscal(orcamentoId);
+                  console.log('DEBUG emitirNotaFiscal sucesso:', msg);
+                  showToast(msg, 'success');
+                } catch (err) {
+                  console.error('DEBUG emitirNotaFiscal erro:', err);
+                  showToast(err || 'Erro ao emitir nota.', 'danger');
+                }
               } else if (nfceAwaitingEmission) {
                 console.log(
                   'DEBUG nfceAwaitingEmission=true, iniciando emitirNFCe para',
                   orcamentoId
                 );
-                emitirNFCe(orcamentoId)
-                  .then(msg => {
-                    console.log('DEBUG emitirNFCe sucesso:', msg);
-                    showToast(msg, 'success');
-                  })
-                  .catch(err => {
-                    console.error('DEBUG emitirNFCe erro:', err);
-                    showToast(err || 'Erro ao emitir nota.', 'danger');
-                  });
+                try {
+                  const msg = await emitirNFCe(orcamentoId);
+                  console.log('DEBUG emitirNFCe sucesso:', msg);
+                  showToast(msg, 'success');
+                } catch (err) {
+                  console.error('DEBUG emitirNFCe erro:', err);
+                  showToast(err || 'Erro ao emitir nota.', 'danger');
+                }
               } else {
                 console.log('DEBUG aguardando escolha do usuário para emitir NF-e/NFC-e');
               }
-            })
-
-            .catch(errMsg => {
+            } catch (errMsg) {
               console.error('DEBUG finalizarVendaSemNFe falha:', errMsg);
               finalizandoOrcamento = false;
               isProcessandoFinalizacao = false;
               $btn.prop('disabled', false).html('Confirmar Finalização');
               showToast(errMsg || 'Erro ao finalizar venda.', 'danger');
-            });
+            }
+          })();
 
           $('#btnConfirmarEmitirNFe')
             .off('click')
-            .on('click', function() {
+            .on('click', async function() {
               if (isProcessandoEmissaoNFe) return;
               isProcessandoEmissaoNFe = true;
 
@@ -2200,21 +2199,18 @@
 
               if (pendingOrcamentoId) {
                 console.log('DEBUG imediato emitirNotaFiscal para', pendingOrcamentoId);
-                emitirNotaFiscal(pendingOrcamentoId)
-                  .then(msg => {
-                    console.log('DEBUG emitirNotaFiscal sucesso:', msg);
-                    showToast(msg, 'success');
-                    const modalNFeEl = document.getElementById('modalConfirmarNFe');
-                    bootstrap.Modal.getInstance(modalNFeEl).hide();
-                  })
-                  .catch(err => {
-                    console.error('DEBUG emitirNotaFiscal erro:', err);
-                    showToast(err || 'Erro ao emitir nota.', 'danger');
-                    $btn.prop('disabled', false);
-                  })
-                  .always(() => {
-                    isProcessandoEmissaoNFe = false;
-                  });
+                try {
+                  const msg = await emitirNotaFiscal(pendingOrcamentoId);
+                  console.log('DEBUG emitirNotaFiscal sucesso:', msg);
+                  showToast(msg, 'success');
+                  const modalNFeEl = document.getElementById('modalConfirmarNFe');
+                  bootstrap.Modal.getInstance(modalNFeEl).hide();
+                } catch (err) {
+                  console.error('DEBUG emitirNotaFiscal erro:', err);
+                  showToast(err || 'Erro ao emitir nota.', 'danger');
+                  $btn.prop('disabled', false);
+                }
+                isProcessandoEmissaoNFe = false;
               } else {
                 console.log('DEBUG aguardando faturamento antes de emitir NF-e');
                 isProcessandoEmissaoNFe = false;
@@ -2223,7 +2219,7 @@
 
           $('#btnConfirmarEmitirNFCE')
             .off('click')
-            .on('click', function() {
+            .on('click', async function() {
               if (isProcessandoEmissaoNFe) return;
               isProcessandoEmissaoNFe = true;
 
@@ -2239,21 +2235,18 @@
 
               if (pendingOrcamentoId) {
                 console.log('DEBUG imediato emitirNFCe para', pendingOrcamentoId);
-                emitirNFCe(pendingOrcamentoId)
-                  .then(msg => {
-                    console.log('DEBUG emitirNFCe sucesso:', msg);
-                    showToast(msg, 'success');
-                    const modalNFeEl = document.getElementById('modalConfirmarNFe');
-                    bootstrap.Modal.getInstance(modalNFeEl).hide();
-                  })
-                  .catch(err => {
-                    console.error('DEBUG emitirNFCe erro:', err);
-                    showToast(err || 'Erro ao emitir nota.', 'danger');
-                    $btn.prop('disabled', false);
-                  })
-                  .always(() => {
-                    isProcessandoEmissaoNFe = false;
-                  });
+                try {
+                  const msg = await emitirNFCe(pendingOrcamentoId);
+                  console.log('DEBUG emitirNFCe sucesso:', msg);
+                  showToast(msg, 'success');
+                  const modalNFeEl = document.getElementById('modalConfirmarNFe');
+                  bootstrap.Modal.getInstance(modalNFeEl).hide();
+                } catch (err) {
+                  console.error('DEBUG emitirNFCe erro:', err);
+                  showToast(err || 'Erro ao emitir nota.', 'danger');
+                  $btn.prop('disabled', false);
+                }
+                isProcessandoEmissaoNFe = false;
               } else {
                 console.log('DEBUG aguardando faturamento antes de emitir NFC-e');
                 isProcessandoEmissaoNFe = false;
