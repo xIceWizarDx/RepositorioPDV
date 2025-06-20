@@ -6,6 +6,7 @@
   crossorigin="anonymous">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet"
   crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -281,18 +282,17 @@
         </div>
         <div class="card-body d-flex flex-column">
           <div class="row g-3 align-items-end mb-3">
-            <div class="col-md-10">
+            <div class="col-md-3">
+              <label class="form-label"><b>Cód. Barras</b></label>
+              <input id="cEANInput" type="text" class="form-control" placeholder="EAN" autocomplete="off">
+            </div>
+            <div class="col-md-7">
               <label class="form-label"><b>Produto</b> <small>[Ctrl+0]</small></label>
               <div class="input-group">
-                <input id="produtoSearchInput" type="text" class="form-control dropdown-toggle"
-                  placeholder="Digite nome, código ou ref." autocomplete="off" data-bs-toggle="dropdown"
-                  aria-expanded="false" aria-autocomplete="list" aria-haspopup="true" role="combobox"
-                  aria-owns="produtoSearchResults" aria-activedescendant="" autofocus>
+                <select id="produtoSelect" class="form-select" style="width: 100%"></select>
                 <button class="input-group-text" id="btnModalBuscaProduto" tabindex="-1" title="Buscar produto">
                   <i class="fa fa-search"></i>
                 </button>
-                <ul class="dropdown-menu w-100" id="produtoSearchResults" role="listbox"
-                  aria-label="Resultados da busca"></ul>
               </div>
             </div>
             <div class="col-md-2">
@@ -569,6 +569,7 @@
   @section('script')
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     crossorigin="anonymous"></script>
   <script src="{{ asset('js/script.js') }}"></script>
@@ -589,7 +590,7 @@
         const navType = navEntries.length ? navEntries[0].type : '';
 
         if (event.persisted || navType === 'back_forward') {
-          carregarProdutosCache();
+          // cache desativado
         }
       });
 
@@ -712,6 +713,52 @@
         let produtoFoiAdicionado = false;
         let adicionandoProduto = false;
 
+        const $produtoSelect = $('#produtoSelect').select2({
+          ajax: {
+            url: "{{ route('pdv.search.products') }}",
+            dataType: 'json',
+            delay: 250,
+            cache: false,
+            data: params => ({ q: params.term }),
+            processResults: data => ({ results: data.items })
+          },
+          minimumInputLength: 2,
+          placeholder: 'Buscar produto',
+          matcher: function(params, data) {
+            const term = (params.term || '').toLowerCase();
+            if (!term) return data;
+            if (typeof data.text === 'undefined') return null;
+            return data.text.toLowerCase().startsWith(term) ? data : null;
+          }
+        }).on('select2:select', function(e) {
+          const prod = e.params.data;
+          if (parseInt(prod.estoque, 10) > 0) {
+            adicionarItemPDV(prod);
+          } else {
+            showToast('Produto sem estoque.', 'warning');
+          }
+          $(this).val(null).trigger('change');
+        });
+
+        $('#cEANInput').on('keypress', function(e) {
+          if (e.which === 13) {
+            e.preventDefault();
+            const codigo = $(this).val().trim();
+            if (!codigo) return;
+            $.get("{{ route('pdv.search.products') }}", { q: codigo })
+              .done(function(resp) {
+                const data = resp.items || resp;
+                const prod = data.find(p => (p.cEAN === codigo || p.codigo_ref === codigo) && parseInt(p.estoque, 10) > 0);
+                if (prod) {
+                  adicionarItemPDV(prod);
+                  $('#cEANInput').val('');
+                } else {
+                  showToast('Produto não encontrado ou sem estoque.', 'warning');
+                }
+              });
+          }
+        });
+
         /* ================= Gerenciamento de produtos ================= */
 
         // -- Funções de cache --
@@ -730,7 +777,7 @@
             });
         }
 
-        carregarProdutosCache();
+        // carregarProdutosCache desativado
 
         // Filtra produtos já carregados em cache
         function buscarProdutosNoCache(query) {
