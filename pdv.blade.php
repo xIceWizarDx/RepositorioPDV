@@ -711,6 +711,7 @@
         let produtoIndexAtivo = 0;
         let produtoFoiAdicionado = false;
         let adicionandoProduto = false;
+        let produtoSearchCache = new Map();
 
         /* ================= Gerenciamento de produtos ================= */
 
@@ -765,6 +766,16 @@
               q: term || '',
               t: Date.now() // evita cache em navegadores/proxies
             }
+          });
+        }
+
+        function buscarProdutosComCache(term) {
+          const normalized = String(term || '').toLowerCase();
+          if (produtoSearchCache.has(normalized)) {
+            return $.Deferred().resolve(produtoSearchCache.get(normalized)).promise();
+          }
+          return buscarProdutos(term).done(function(data) {
+            produtoSearchCache.set(normalized, data);
           });
         }
 
@@ -855,7 +866,7 @@
 
 
         const realizarBuscaAjax = debounce(function(term, inputEl) {
-          buscarProdutos(term)
+          buscarProdutosComCache(term)
             .done(function(data) {
               preencherResultadosDropdown(data, term);
               bootstrap.Dropdown.getOrCreateInstance(inputEl).show();
@@ -863,7 +874,7 @@
             .fail(function() {
               showToast('Erro ao buscar produtos.', 'danger');
             });
-        }, 300);
+        }, 150);
 
         $(prefix + '#produtoSearchInput').on('input', function() {
           const val = $(this).val().trim();
@@ -912,7 +923,7 @@
               return;
             }
 
-            buscarProdutos(val)
+            buscarProdutosComCache(val)
               .done(function(data) {
                 const codigosProdutos = data.filter(p => {
                   const cods = [p.codigo_ref, p.cEAN].map(c => c ? String(c) : '').filter(Boolean);
@@ -1038,7 +1049,7 @@
           $(prefix + '#modalBuscaProduto').modal('show');
           $(prefix + '#modalBuscaProdutoInput').val('').focus();
 
-          buscarProdutos('').done(function(data) {
+          buscarProdutosComCache('').done(function(data) {
             itensVenda.forEach(item => {
               const prodCompleto = data.find(p => p.id === item.produto_id);
               produtosSelecionadosModal.set(item.produto_id, {
@@ -1058,12 +1069,12 @@
         $(prefix + '#modalBuscaProdutoInput').on('input', function() {
           const val = $(this).val().trim();
           if (val.length < 1) {
-            buscarProdutos('').done(function(data) {
+            buscarProdutosComCache('').done(function(data) {
               renderProdutosModal(data);
             });
             return;
           }
-          buscarProdutos(val).done(function(data) {
+          buscarProdutosComCache(val).done(function(data) {
             renderProdutosModal(data);
           });
         });
