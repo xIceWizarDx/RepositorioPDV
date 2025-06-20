@@ -711,7 +711,6 @@
         let produtoIndexAtivo = 0;
         let produtoFoiAdicionado = false;
         let adicionandoProduto = false;
-        let produtoSearchCache = new Map();
 
         /* ================= Gerenciamento de produtos ================= */
 
@@ -720,8 +719,7 @@
         // Busca todos os produtos para uso em cache local
         function carregarProdutosCache() {
           return $.get('{{ route("pdv.search.products") }}', {
-              q: '',
-              all: 1
+              q: ''
             })
             .done(function(data) {
               window.produtosCache = data;
@@ -733,7 +731,6 @@
         }
 
         carregarProdutosCache();
-        setInterval(carregarProdutosCache, 60000);
 
         // Filtra produtos já carregados em cache
         function buscarProdutosNoCache(query) {
@@ -768,16 +765,6 @@
               q: term || '',
               t: Date.now() // evita cache em navegadores/proxies
             }
-          });
-        }
-
-        function buscarProdutosComCache(term) {
-          const normalized = String(term || '').toLowerCase();
-          if (produtoSearchCache.has(normalized)) {
-            return $.Deferred().resolve(produtoSearchCache.get(normalized)).promise();
-          }
-          return buscarProdutos(term).done(function(data) {
-            produtoSearchCache.set(normalized, data);
           });
         }
 
@@ -868,7 +855,7 @@
 
 
         const realizarBuscaAjax = debounce(function(term, inputEl) {
-          buscarProdutosComCache(term)
+          buscarProdutos(term)
             .done(function(data) {
               preencherResultadosDropdown(data, term);
               bootstrap.Dropdown.getOrCreateInstance(inputEl).show();
@@ -876,7 +863,7 @@
             .fail(function() {
               showToast('Erro ao buscar produtos.', 'danger');
             });
-        }, 150);
+        }, 300);
 
         $(prefix + '#produtoSearchInput').on('input', function() {
           const val = $(this).val().trim();
@@ -886,11 +873,6 @@
             dropdownInstance.hide();
             return;
           }
-
-          const locais = buscarProdutosNoCache(val).slice(0, 20);
-          preencherResultadosDropdown(locais, val);
-          dropdownInstance.show();
-
           realizarBuscaAjax(val, this);
         });
 
@@ -930,7 +912,7 @@
               return;
             }
 
-            buscarProdutosComCache(val)
+            buscarProdutos(val)
               .done(function(data) {
                 const codigosProdutos = data.filter(p => {
                   const cods = [p.codigo_ref, p.cEAN].map(c => c ? String(c) : '').filter(Boolean);
@@ -1056,7 +1038,7 @@
           $(prefix + '#modalBuscaProduto').modal('show');
           $(prefix + '#modalBuscaProdutoInput').val('').focus();
 
-          buscarProdutosComCache('').done(function(data) {
+          buscarProdutos('').done(function(data) {
             itensVenda.forEach(item => {
               const prodCompleto = data.find(p => p.id === item.produto_id);
               produtosSelecionadosModal.set(item.produto_id, {
@@ -1076,12 +1058,12 @@
         $(prefix + '#modalBuscaProdutoInput').on('input', function() {
           const val = $(this).val().trim();
           if (val.length < 1) {
-            buscarProdutosComCache('').done(function(data) {
+            buscarProdutos('').done(function(data) {
               renderProdutosModal(data);
             });
             return;
           }
-          buscarProdutosComCache(val).done(function(data) {
+          buscarProdutos(val).done(function(data) {
             renderProdutosModal(data);
           });
         });
