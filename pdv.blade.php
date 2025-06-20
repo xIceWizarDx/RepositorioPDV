@@ -893,8 +893,16 @@
         });
 
         $(prefix + '#produtoSearchInput').on('keydown', function(e) {
+          const itens = $(prefix + '#produtoSearchResults .dropdown-item');
+
           if (e.key === "Enter") {
             e.preventDefault();
+
+            if (itens.length && produtoIndexAtivo > -1) {
+              $(itens[produtoIndexAtivo]).click();
+              produtoIndexAtivo = 0;
+              return;
+            }
 
             const val = $(this).val().trim();
             if (!val) {
@@ -937,9 +945,10 @@
               .fail(function() {
                 showToast('Erro ao buscar produtos.', 'danger');
               });
+
+            return;
           }
 
-          const itens = $(prefix + '#produtoSearchResults .dropdown-item');
           if (!itens.length) return;
 
           if (e.key === "ArrowDown") {
@@ -955,11 +964,6 @@
             itens.removeClass('active');
             $(itens[produtoIndexAtivo]).addClass('active');
             $(prefix + '#produtoSearchInput').attr('aria-activedescendant', $(itens[produtoIndexAtivo]).attr('id') || '');
-          }
-          if (e.key === "Enter" && produtoIndexAtivo > -1) {
-            e.preventDefault();
-            $(itens[produtoIndexAtivo]).click();
-            produtoIndexAtivo = 0;
           }
         });
 
