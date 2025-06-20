@@ -1743,6 +1743,32 @@
           }
         }
 
+        async function emitirNotaFiscalRetry(orcamentoId, tentativas = 2) {
+          let ultimoErro;
+          for (let i = 0; i < tentativas; i++) {
+            try {
+              return await emitirNotaFiscal(orcamentoId);
+            } catch (err) {
+              ultimoErro = err;
+              console.warn('DEBUG emitirNotaFiscalRetry tentativa', i + 1, 'falhou:', err);
+            }
+          }
+          throw ultimoErro;
+        }
+
+        async function emitirNFCeRetry(orcamentoId, tentativas = 2) {
+          let ultimoErro;
+          for (let i = 0; i < tentativas; i++) {
+            try {
+              return await emitirNFCe(orcamentoId);
+            } catch (err) {
+              ultimoErro = err;
+              console.warn('DEBUG emitirNFCeRetry tentativa', i + 1, 'falhou:', err);
+            }
+          }
+          throw ultimoErro;
+        }
+
 
         $(prefix + '#btnFinalizarVenda').off('click').on('click', function() {
           if (!$(prefix + '#clienteInput2').val()) {
@@ -2152,12 +2178,13 @@
                   orcamentoId
                 );
                 try {
-                  const msg = await emitirNotaFiscal(orcamentoId);
+                  const msg = await emitirNotaFiscalRetry(orcamentoId);
                   console.log('DEBUG emitirNotaFiscal sucesso:', msg);
                   showToast(msg, 'success');
                 } catch (err) {
                   console.error('DEBUG emitirNotaFiscal erro:', err);
                   showToast(err || 'Erro ao emitir nota.', 'danger');
+                  $('#btnConfirmarEmitirNFe').prop('disabled', false);
                 }
               } else if (nfceAwaitingEmission) {
                 console.log(
@@ -2165,12 +2192,13 @@
                   orcamentoId
                 );
                 try {
-                  const msg = await emitirNFCe(orcamentoId);
+                  const msg = await emitirNFCeRetry(orcamentoId);
                   console.log('DEBUG emitirNFCe sucesso:', msg);
                   showToast(msg, 'success');
                 } catch (err) {
                   console.error('DEBUG emitirNFCe erro:', err);
                   showToast(err || 'Erro ao emitir nota.', 'danger');
+                  $('#btnConfirmarEmitirNFCE').prop('disabled', false);
                 }
               } else {
                 console.log('DEBUG aguardando escolha do usuário para emitir NF-e/NFC-e');
@@ -2203,7 +2231,7 @@
               if (pendingOrcamentoId) {
                 console.log('DEBUG imediato emitirNotaFiscal para', pendingOrcamentoId);
                 try {
-                  const msg = await emitirNotaFiscal(pendingOrcamentoId);
+                  const msg = await emitirNotaFiscalRetry(pendingOrcamentoId);
                   console.log('DEBUG emitirNotaFiscal sucesso:', msg);
                   showToast(msg, 'success');
                   const modalNFeEl = document.getElementById('modalConfirmarNFe');
@@ -2239,7 +2267,7 @@
               if (pendingOrcamentoId) {
                 console.log('DEBUG imediato emitirNFCe para', pendingOrcamentoId);
                 try {
-                  const msg = await emitirNFCe(pendingOrcamentoId);
+                  const msg = await emitirNFCeRetry(pendingOrcamentoId);
                   console.log('DEBUG emitirNFCe sucesso:', msg);
                   showToast(msg, 'success');
                   const modalNFeEl = document.getElementById('modalConfirmarNFe');
