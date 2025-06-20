@@ -387,6 +387,9 @@
             <button id="btnCancelarOperacao" class="btn btn-danger" aria-label="Cancelar operação">
               <i class="fas fa-times-circle"></i> Cancelar [ESC]
             </button>
+            <button id="btnImprimirOrcamento" class="btn btn-warning" aria-label="Apenas Orçamento">
+              <i class="fas fa-print"></i> Apenas Orçamento
+            </button>
             <button id="btnFinalizarVenda" class="btn btn-success" aria-label="Finalizar venda">
               <i class="fas fa-check-circle"></i> Finalizar Venda
             </button>
@@ -616,6 +619,7 @@
       $(function() {
 
         const prefix = '.pdv-wrapper ';
+        const orcamentoId = {{ isset($orcamento) ? $orcamento->id : 'null' }};
 
         /* ================= Funções utilitárias ================= */
         // Converte datas no formato DD/MM/AAAA para o padrao ISO AAAA-MM-DD
@@ -2404,6 +2408,34 @@
             e.preventDefault();
             $(prefix + '#produtoSearchInput').focus();
           }
+        });
+
+        // Impressão rápida do orçamento em nova aba
+        $('#btnImprimirOrcamento').on('click', function(e) {
+          e.preventDefault();
+
+          if (!orcamentoId) {
+            alert('Orçamento não disponível.');
+            return;
+          }
+
+          let url = "{{ route('vendas.report.orcamento', ['orcamento_id' => '__id__']) }}";
+          url = url.replace('__id__', orcamentoId);
+
+          const printWindow = window.open(url, '_blank');
+          if (!printWindow) {
+            alert('Não foi possível abrir a janela de impressão. Verifique o bloqueador de pop-ups.');
+            return;
+          }
+
+          $(printWindow).on('load', function() {
+            setTimeout(function() {
+              printWindow.print();
+            }, 1000);
+            setTimeout(function() {
+              printWindow.close();
+            }, 8000);
+          });
         });
 
         // Atalhos de teclado para agilizar o atendimento
