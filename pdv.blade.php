@@ -723,6 +723,28 @@
 
         carregarProdutosCache();
 
+        // Filtra produtos já carregados em cache
+        function buscarProdutosNoCache(query) {
+          if (!query) return [];
+          const q = query.toLowerCase();
+
+          const todos = window.produtosCache.filter(p =>
+            (p.codigo_ref && p.codigo_ref.toLowerCase().includes(q)) ||
+            (p.cEAN && p.cEAN.toLowerCase().includes(q)) ||
+            (p.text && p.text.toLowerCase().includes(q)) ||
+            (p.modelo && p.modelo.toLowerCase().includes(q))
+          );
+
+          todos.sort((a, b) => {
+            const aMatch = (a.codigo_ref === query || a.cEAN === query) ? 0 : 1;
+            const bMatch = (b.codigo_ref === query || b.cEAN === query) ? 0 : 1;
+            if (aMatch !== bMatch) return aMatch - bMatch;
+            return a.text.localeCompare(b.text);
+          });
+
+          return todos;
+        }
+
         // Consulta produtos no backend conforme o termo de busca
         function buscarProdutos(term) {
           return $.get('{{ route("pdv.search.products") }}', {
@@ -827,14 +849,10 @@
             dropdownInstance.hide();
             return;
           }
-          clearTimeout(debounceTimeout);
-          debounceTimeout = setTimeout(() => {
-            buscarProdutos(val).done(function(resultados) {
-              preencherResultadosDropdown(resultados, val);
-              const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(document.getElementById('produtoSearchInput'));
-              dropdownInstance.show();
-            });
-          }, 300);
+          const resultados = buscarProdutosNoCache(val);
+          preencherResultadosDropdown(resultados, val);
+          const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(this);
+          dropdownInstance.show();
         });
 
         $(prefix + '#produtoSearchInput').on('click focus', function() {
@@ -865,35 +883,34 @@
               return;
             }
 
-            buscarProdutos(val).done(function(data) {
-              const codigosProdutos = data.filter(p => {
-                const cods = [p.codigo_ref, p.cEAN].map(c => c ? String(c) : '').filter(Boolean);
-                return cods.includes(val);
-              });
-
-              let prodParaAdicionar = null;
-              if (codigosProdutos.length > 0) {
-                prodParaAdicionar = codigosProdutos[0];
-              } else {
-                const nomeExato = data.find(p => p.text.toLowerCase() === val.toLowerCase());
-                if (nomeExato) prodParaAdicionar = nomeExato;
-              }
-
-              if (prodParaAdicionar) {
-                adicionarItemPDV({
-                  id: prodParaAdicionar.id,
-                  text: prodParaAdicionar.text,
-                  preco_vista: prodParaAdicionar.preco_vista,
-                  preco_prazo: prodParaAdicionar.preco_prazo,
-                  estoque: prodParaAdicionar.estoque
-                });
-                $(prefix + '#produtoSearchInput').val('').focus();
-                $(prefix + '#produtoSearchResults').empty();
-              } else {
-                preencherResultadosDropdown(data, val);
-                showToast('Produto não encontrado para o valor exato digitado.', 'warning');
-              }
+            const data = buscarProdutosNoCache(val);
+            const codigosProdutos = data.filter(p => {
+              const cods = [p.codigo_ref, p.cEAN].map(c => c ? String(c) : '').filter(Boolean);
+              return cods.includes(val);
             });
+
+            let prodParaAdicionar = null;
+            if (codigosProdutos.length > 0) {
+              prodParaAdicionar = codigosProdutos[0];
+            } else {
+              const nomeExato = data.find(p => p.text.toLowerCase() === val.toLowerCase());
+              if (nomeExato) prodParaAdicionar = nomeExato;
+            }
+
+            if (prodParaAdicionar) {
+              adicionarItemPDV({
+                id: prodParaAdicionar.id,
+                text: prodParaAdicionar.text,
+                preco_vista: prodParaAdicionar.preco_vista,
+                preco_prazo: prodParaAdicionar.preco_prazo,
+                estoque: prodParaAdicionar.estoque
+              });
+              $(prefix + '#produtoSearchInput').val('').focus();
+              $(prefix + '#produtoSearchResults').empty();
+            } else {
+              preencherResultadosDropdown(data, val);
+              showToast('Produto não encontrado para o valor exato digitado.', 'warning');
+            }
           }
 
           const itens = $(prefix + '#produtoSearchResults .dropdown-item');
