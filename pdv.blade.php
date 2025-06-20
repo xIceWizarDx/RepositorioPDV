@@ -2236,9 +2236,6 @@
                   showToast(msg, 'success');
                   const modalNFeEl = document.getElementById('modalConfirmarNFe');
                   bootstrap.Modal.getInstance(modalNFeEl).hide();
-                  const modalFinalEl = document.getElementById("modalMultiplasFormas");
-                  const modalFinal = bootstrap.Modal.getInstance(modalFinalEl);
-                  if (modalFinal) modalFinal.hide();
                 } catch (err) {
                   console.error('DEBUG emitirNotaFiscal erro:', err);
                   showToast(err || 'Erro ao emitir nota.', 'danger');
@@ -2275,9 +2272,6 @@
                   showToast(msg, 'success');
                   const modalNFeEl = document.getElementById('modalConfirmarNFe');
                   bootstrap.Modal.getInstance(modalNFeEl).hide();
-                  const modalFinalEl = document.getElementById("modalMultiplasFormas");
-                  const modalFinal = bootstrap.Modal.getInstance(modalFinalEl);
-                  if (modalFinal) modalFinal.hide();
                 } catch (err) {
                   console.error('DEBUG emitirNFCe erro:', err);
                   showToast(err || 'Erro ao emitir nota.', 'danger');
