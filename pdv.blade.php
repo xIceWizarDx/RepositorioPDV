@@ -1327,6 +1327,9 @@
           $(prefix + '#produtoSearchResults').empty();
           produtoIndexAtivo = 0;
           console.log('Venda reiniciada.');
+
+          // Atualiza o cache de produtos após reiniciar a venda
+          carregarProdutosCache();
         });
 
         $(prefix + '#btnCancelarOperacao').click(function() {
@@ -1984,6 +1987,9 @@
                 $('#precoLivreInput').val('0,00');
 
                 $('#produtoSearchInput').val('').focus();
+
+                // Recarrega o cache de produtos para manter o estoque atualizado
+                carregarProdutosCache();
               }
 
               limparVenda();
@@ -2147,6 +2153,9 @@
                 $('#precoLivreInput').val('0,00');
 
                 $('#produtoSearchInput').val('').focus();
+
+                // Recarrega o cache de produtos para manter o estoque atualizado
+                carregarProdutosCache();
               }
 
               const modalNFeEl = document.getElementById('modalConfirmarNFe');
