@@ -55,10 +55,6 @@ Route::group([
     Route::get('/pdv/search-products', [PdvController::class, 'searchProducts'])
         ->name('pdv.search.products');
 
-    // Estoque atualizado dos produtos em tempo real
-    Route::get('/pdv/stocks', [PdvController::class, 'getStocks'])
-        ->name('pdv.stocks');
-
     // criar orçamento (via AJAX no PDV)
     Route::post('/vendas/orcamento', [OrcamentoController::class, 'store'])
         ->name('vendas.orcamento.store');
