@@ -2181,6 +2181,14 @@
                   const msg = await emitirNotaFiscalRetry(orcamentoId);
                   console.log('DEBUG emitirNotaFiscal sucesso:', msg);
                   showToast(msg, 'success');
+                  const modalNFeEl2 = document.getElementById('modalConfirmarNFe');
+                  if (modalNFeEl2 && modalNFeEl2.classList.contains('show')) {
+                    bootstrap.Modal.getInstance(modalNFeEl2)?.hide();
+                  }
+                  const modalFinalEl2 = document.getElementById('modalMultiplasFormas');
+                  if (modalFinalEl2 && modalFinalEl2.classList.contains('show')) {
+                    bootstrap.Modal.getInstance(modalFinalEl2)?.hide();
+                  }
                 } catch (err) {
                   console.error('DEBUG emitirNotaFiscal erro:', err);
                   showToast(err || 'Erro ao emitir nota.', 'danger');
@@ -2195,6 +2203,14 @@
                   const msg = await emitirNFCeRetry(orcamentoId);
                   console.log('DEBUG emitirNFCe sucesso:', msg);
                   showToast(msg, 'success');
+                  const modalNFeEl2 = document.getElementById('modalConfirmarNFe');
+                  if (modalNFeEl2 && modalNFeEl2.classList.contains('show')) {
+                    bootstrap.Modal.getInstance(modalNFeEl2)?.hide();
+                  }
+                  const modalFinalEl2 = document.getElementById('modalMultiplasFormas');
+                  if (modalFinalEl2 && modalFinalEl2.classList.contains('show')) {
+                    bootstrap.Modal.getInstance(modalFinalEl2)?.hide();
+                  }
                 } catch (err) {
                   console.error('DEBUG emitirNFCe erro:', err);
                   showToast(err || 'Erro ao emitir nota.', 'danger');
