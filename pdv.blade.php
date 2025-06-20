@@ -943,8 +943,8 @@
 
         $(prefix + '#produtoSearchResults').on('click', '.dropdown-item', function(e) {
           e.preventDefault();
-          const $el = $(this);
-          const prod = {
+          var $el = $(this);
+          var prod = {
             id: $el.data('id'),
             text: $el.data('text'),
             preco_vista: $el.data('preco_vista'),
