@@ -71,18 +71,11 @@ class PdvController extends Controller
 
         Log::debug('[PdvController@index] paymentConditions final:', $paymentConditions);
 
-        $orcamento = null;
-        $orcamentoId = request('orcamento_id');
-        if ($orcamentoId) {
-            $orcamento = \App\Models\Venda\Orcamento::find($orcamentoId);
-        }
-
         return view('pdv', compact(
             'clientes',
             'vendedores',
             'formasPagamento',
-            'paymentConditions',
-            'orcamento'
+            'paymentConditions'
         ));
     }
 
@@ -187,7 +180,7 @@ class PdvController extends Controller
             return response()->json(['status' => 'NOK', 'data' => $debugMsg]);
         }
 
-        foreach ($detPag as $i => &$pag) {
+        foreach ($detPag as $i => $pag) {
             Log::debug("Processando detPag[{$i}]:", ['valor' => $pag]);
             if (is_object($pag)) {
                 $pag = (array) $pag;
@@ -198,11 +191,7 @@ class PdvController extends Controller
                 Log::error("Erro de validação em detPag[{$i}]:", ['pag' => $pag]);
                 return response()->json(['status' => 'NOK', 'data' => $debugMsg]);
             }
-
-            $valor = str_replace(['.', ','], ['', '.'], $pag['vPag']);
-            $pag['vPag'] = round((float) $valor, 2);
         }
-        unset($pag);
 
         Log::debug('detPag processado sem erros:', $detPag);
 
