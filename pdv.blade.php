@@ -2203,6 +2203,12 @@
               } else {
                 console.log('DEBUG aguardando escolha do usuário para emitir NF-e/NFC-e');
               }
+
+              if (nfeAwaitingEmission || nfceAwaitingEmission) {
+                const modalNFeEl = document.getElementById('modalConfirmarNFe');
+                const instNFe = bootstrap.Modal.getInstance(modalNFeEl);
+                if (instNFe) instNFe.hide();
+              }
             } catch (errMsg) {
               console.error('DEBUG finalizarVendaSemNFe falha:', errMsg);
               finalizandoOrcamento = false;
