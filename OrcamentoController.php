@@ -450,14 +450,18 @@ class OrcamentoController extends Controller
             if ($mov_estoque){
                 $itens = OrcamentoItens::where('orcamento_id', $orcamento->id)->get();
                 if (count($itens) > 0) {
-                    foreach ($itens as $item){
+                    foreach ($itens as $item) {
                         $produtoEstoque = ProdutoEstoque::where('empresa_id', $empresa_id)
                             ->where('produto_id', $item->produto_id)
                             ->first();
-                        if (!empty($produtoEstoque)){
-                            $produtoEstoque->estoque = doubleval($produtoEstoque->estoque) - doubleval($item->quantidade);
-                            $produtoEstoque->save();
+                        if (empty($produtoEstoque) || $produtoEstoque->estoque < $item->quantidade) {
+                            DB::rollBack();
+                            return response()->json([
+                                'status' => 'NOK',
+                                'data'   => 'Estoque insuficiente para o produto ' . $item->produto_id
+                            ]);
                         }
+                        $produtoEstoque->decrement('estoque', $item->quantidade);
                     }
                 }
             }

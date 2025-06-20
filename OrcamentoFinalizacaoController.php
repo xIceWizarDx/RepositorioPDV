@@ -1969,10 +1969,14 @@ class OrcamentoFinalizacaoController extends Controller
                         $produtoEstoque = ProdutoEstoque::where('empresa_id', $empresa_id)
                             ->where('produto_id', $item->produto_id)
                             ->first();
-                        if (!empty($produtoEstoque)) {
-                            $produtoEstoque->estoque = doubleval($produtoEstoque->estoque) - doubleval($item->quantidade);
-                            $produtoEstoque->save();
+                        if (empty($produtoEstoque) || $produtoEstoque->estoque < $item->quantidade) {
+                            DB::rollBack();
+                            return response()->json([
+                                'status' => 'NOK',
+                                'data'   => 'Estoque insuficiente para o produto ' . $item->produto_id
+                            ]);
                         }
+                        $produtoEstoque->decrement('estoque', $item->quantidade);
                     }
                 }
             }

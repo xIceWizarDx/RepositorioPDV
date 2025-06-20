@@ -129,22 +129,23 @@ class PdvController extends Controller
             return response()->json([], 422);
         }
 
-        $term = trim($request->get('q', ''));
+        $term = trim($request->input('q', ''));
         $empresaId = (int) session('empresa.id', 0);
 
         Log::debug('[PdvController@searchProducts] Termo de busca:', ['q' => $term, 'empresaId' => $empresaId]);
 
         try {
-            $produtos = \App\Models\Cadastro\Produto::orderBy('descricao')
-                ->when($term, function ($q) use ($term) {
-                    $q->where(function ($w) use ($term) {
-                        $w->where('descricao', 'like', '%' . $term . '%')
-                            ->orWhere('modelo', 'like', '%' . $term . '%')
-                            ->orWhere('cEAN', 'like', $term . '%')
-                            ->orWhere('codigo_ref', 'like', $term . '%');
+            $likeTerm = $term . '%';
+            $produtos = \App\Models\Cadastro\Produto::where('estoque', '>', 0)
+                ->when($term, function ($q) use ($term, $likeTerm) {
+                    $q->where(function ($w) use ($term, $likeTerm) {
+                        $w->where('cEAN', 'like', $likeTerm)
+                          ->orWhere('codigo_ref', 'like', $likeTerm)
+                          ->orWhere('descricao', 'like', '%' . $term . '%');
                     });
                 })
-                ->limit(20)
+                ->orderByRaw('CASE WHEN cEAN LIKE ? OR codigo_ref LIKE ? THEN 0 ELSE 1 END, descricao', [$likeTerm, $likeTerm])
+                ->limit(10)
                 ->get();
 
             $precos = \App\Models\Cadastro\ProdutoPreco::where('empresa_id', $empresaId)
@@ -164,8 +165,7 @@ class PdvController extends Controller
                 'cEAN'        => $p->cEAN,
             ]);
             Log::debug('[PdvController@searchProducts] Resultado JSON:', $results->toArray());
-
-            return response()->json($results);
+            return response()->json(['items' => $results]);
         } catch (\Throwable $e) {
             Log::error('[PdvController@searchProducts] erro:', ['message' => $e->getMessage()]);
             return response()->json([], 500);
