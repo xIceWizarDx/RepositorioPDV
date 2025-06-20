@@ -75,7 +75,7 @@ class PdvController extends Controller
                 $conds = $rawConditions
                     ->where('descricao_id', $forma->id)
                     ->pluck('pag_mod')
-                    ->map(fn ($v) => (int) $v)
+                    ->map(fn($v) => (int) $v)
                     ->all();
 
                 $paymentConditions[$forma->id] = empty($conds) ? [0] : $conds;
@@ -123,28 +123,19 @@ class PdvController extends Controller
     public function searchProducts(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'q'    => 'nullable|string|max:100',
-            'all'  => 'sometimes|boolean',
-            'limit'=> 'sometimes|integer|min:1|max:5000',
+            'q' => 'nullable|string|max:100',
         ]);
         if ($validator->fails()) {
             return response()->json([], 422);
         }
 
-        $term     = trim($request->get('q', ''));
+        $term = trim($request->get('q', ''));
         $empresaId = (int) session('empresa.id', 0);
-        $all      = $request->boolean('all', false);
-        $limit    = $request->get('limit');
 
-        Log::debug('[PdvController@searchProducts] Termo de busca:', [
-            'q' => $term,
-            'empresaId' => $empresaId,
-            'all' => $all,
-            'limit' => $limit
-        ]);
+        Log::debug('[PdvController@searchProducts] Termo de busca:', ['q' => $term, 'empresaId' => $empresaId]);
 
         try {
-            $query = \App\Models\Cadastro\Produto::orderBy('descricao')
+            $produtos = \App\Models\Cadastro\Produto::orderBy('descricao')
                 ->when($term, function ($q) use ($term) {
                     $q->where(function ($w) use ($term) {
                         $w->where('descricao', 'like', '%' . $term . '%')
@@ -152,13 +143,9 @@ class PdvController extends Controller
                             ->orWhere('cEAN', 'like', $term . '%')
                             ->orWhere('codigo_ref', 'like', $term . '%');
                     });
-                });
-
-            if (!$all) {
-                $query->limit($limit ?? 20);
-            }
-
-            $produtos = $query->get();
+                })
+                ->limit(20)
+                ->get();
 
             $precos = \App\Models\Cadastro\ProdutoPreco::where('empresa_id', $empresaId)
                 ->whereIn('produto_id', $produtos->pluck('id'))
@@ -167,7 +154,7 @@ class PdvController extends Controller
 
             Log::debug('[PdvController@searchProducts] Produtos encontrados:', $produtos->pluck('id', 'descricao')->toArray());
 
-            $results = $produtos->map(fn ($p) => [
+            $results = $produtos->map(fn($p) => [
                 'id'          => $p->id,
                 'text'        => trim("{$p->descricao} {$p->modelo}"),
                 'preco_vista' => optional($precos->get($p->id))->preco_vista,
