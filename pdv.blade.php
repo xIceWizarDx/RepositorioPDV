@@ -720,7 +720,8 @@
         // Busca todos os produtos para uso em cache local
         function carregarProdutosCache() {
           return $.get('{{ route("pdv.search.products") }}', {
-              q: ''
+              q: '',
+              all: 1
             })
             .done(function(data) {
               window.produtosCache = data;
@@ -732,6 +733,7 @@
         }
 
         carregarProdutosCache();
+        setInterval(carregarProdutosCache, 60000);
 
         // Filtra produtos já carregados em cache
         function buscarProdutosNoCache(query) {
@@ -884,6 +886,11 @@
             dropdownInstance.hide();
             return;
           }
+
+          const locais = buscarProdutosNoCache(val).slice(0, 20);
+          preencherResultadosDropdown(locais, val);
+          dropdownInstance.show();
+
           realizarBuscaAjax(val, this);
         });
 
