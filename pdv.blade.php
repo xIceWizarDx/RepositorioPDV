@@ -2480,34 +2480,6 @@
           }
         });
 
-        function atualizarEstoqueItens() {
-          const ids = itensVenda.map(it => it.produto_id);
-          if (!ids.length) return;
-          $.get('{{ route('pdv.stocks') }}', { ids: ids })
-            .done(function(data) {
-              let alterado = false;
-              itensVenda.forEach(function(it) {
-                const novo = parseInt(data[it.produto_id]);
-                if (!isNaN(novo) && it.qtd > novo) {
-                  it.qtd = novo;
-                  it.subtotal = it.preco * it.qtd;
-                  alterado = true;
-                  showToast(`Quantidade do produto "${it.descricao}" ajustada para estoque disponível (${novo}).`, 'warning');
-                }
-              });
-              if (alterado) {
-                window.itensVenda = itensVenda;
-                renderizarItensTabela();
-                calcularTotais();
-              }
-            });
-        }
-
-        setInterval(function() {
-          atualizarEstoqueItens();
-          carregarProdutosCache();
-        }, 10000);
-
         // Garante que o modal de confirmação de nota sempre reative os botões
         // e possa ser fechado imediatamente com ESC
         (function() {
