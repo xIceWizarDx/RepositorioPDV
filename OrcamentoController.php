@@ -80,7 +80,7 @@ class OrcamentoController extends Controller
                 ->leftJoin('tipos_movimentos as tm', 'o.tipo_movimento_id', '=', 'tm.id')
                 ->leftJoin('fiscal_nf as nf', 'o.id', '=', 'nf.orcamento_id')
                 ->where('o.empresa_id', $empresa_id)
-                ->orderBy('o.id','desc');
+                ->orderBy('o.id', 'desc');
 
             if ($orcamento_id > 0)
                 $orcamentos->where('o.id', $orcamento_id);
@@ -93,17 +93,17 @@ class OrcamentoController extends Controller
             }
 
             if (!empty($tipo_date) && !empty($date1) && !empty($date2)) {
-                if (Helper::checkDateUS($date1) && Helper::checkDateUS($date2)){
+                if (Helper::checkDateUS($date1) && Helper::checkDateUS($date2)) {
                     if ($tipo_date == 'CADASTRO') {
                         $orcamentos->whereRaw('date_format(o.created_at, "%Y-%m-%d") >= ?', ["$date1"]);
                         $orcamentos->whereRaw('date_format(o.created_at, "%Y-%m-%d") <= ?', ["$date2"]);
-                    }elseif ($tipo_date == 'FATURADO') {
+                    } elseif ($tipo_date == 'FATURADO') {
                         $orcamentos->whereRaw('date_format(o.dh_faturado, "%Y-%m-%d") >= ?', ["$date1"]);
                         $orcamentos->whereRaw('date_format(o.dh_faturado, "%Y-%m-%d") <= ?', ["$date2"]);
-                    }elseif ($tipo_date == 'ESTORNADO') {
+                    } elseif ($tipo_date == 'ESTORNADO') {
                         $orcamentos->whereRaw('date_format(o.dh_estornado, "%Y-%m-%d") >= ?', ["$date1"]);
                         $orcamentos->whereRaw('date_format(o.dh_estornado, "%Y-%m-%d") <= ?', ["$date2"]);
-                    }elseif ($tipo_date == 'CANCELADO') {
+                    } elseif ($tipo_date == 'CANCELADO') {
                         $orcamentos->whereRaw('date_format(o.dh_cancelado, "%Y-%m-%d") >= ?', ["$date1"]);
                         $orcamentos->whereRaw('date_format(o.dh_cancelado, "%Y-%m-%d") <= ?', ["$date2"]);
                     }
@@ -118,7 +118,7 @@ class OrcamentoController extends Controller
             $orcamentos = $orcamentos->paginate(60);
 
             // verifica se tem finalizacao
-            foreach($orcamentos as $orcamento){
+            foreach ($orcamentos as $orcamento) {
                 $f = OrcamentoFinalizacao::where('orcamento_id', $orcamento->id)->first();
                 if (empty($f))
                     $orcamento->has_finalizacao = 'NOK';
@@ -129,17 +129,15 @@ class OrcamentoController extends Controller
             if ($orcamentos->currentPage() > 1) {
                 return view('venda.orcamento.trs')
                     ->with('orcamentos', $orcamentos)
-                    >with('nf', $nf);
+                    > with('nf', $nf);
             }
 
             return view('venda.orcamento.table')
                 ->with('orcamentos', $orcamentos)
                 ->with('nf', $nf);
-
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return $e->getMessage();
         }
-
     }
 
     /**
@@ -152,12 +150,12 @@ class OrcamentoController extends Controller
         $empresa_id = intval(\Illuminate\Support\Facades\Request::session()->get('empresa')['id']);
         $pessoa_id = intval(auth('web')->user()->pessoa_id);
 
-        $vendedor = DB::connection('db_client')->table('vendedores','v')
+        $vendedor = DB::connection('db_client')->table('vendedores', 'v')
             ->join('pessoas as p', 'v.pessoa_id', '=', 'p.id')
-            ->select(['v.pessoa_id','p.nome_razao'])
+            ->select(['v.pessoa_id', 'p.nome_razao'])
             ->where('v.empresa_id', $empresa_id)
             ->where('v.pessoa_id', $pessoa_id)
-            ->first();    
+            ->first();
 
         return response()->json([
             'status' => 'OK',
@@ -186,31 +184,31 @@ class OrcamentoController extends Controller
 
         $orcamento = Orcamento::find($orcamento->id);
 
-        if (empty($orcamento)){
+        if (empty($orcamento)) {
             return Helper::msg_nok('Orçamento não encontrado');
         }
 
-        if ($orcamento->status == 'FATURADO'){
+        if ($orcamento->status == 'FATURADO') {
             return Helper::msg_nok(
-               'ORÇAMENTO JÁ FATURADO',
-               'Não é possível continuar'
+                'ORÇAMENTO JÁ FATURADO',
+                'Não é possível continuar'
             );
         }
 
-        if ($orcamento->status == 'CANCELADO'){
+        if ($orcamento->status == 'CANCELADO') {
             return Helper::msg_nok(
                 'ORÇAMENTO CANCELADO',
                 'Não é possível faturar'
             );
         }
 
-        if (empty($orcamento->finalizacao)){
+        if (empty($orcamento->finalizacao)) {
             return Helper::msg_nok(
                 'ORÇAMENTO SEM FINALIZAÇÃO',
                 'Edite o orçamento e finalize antes de faturar'
             );
         }
-        $parcelas = OrcamentoParcela::where('orcamento_id', $orcamento->id)->orderBy('sequencial','asc');
+        $parcelas = OrcamentoParcela::where('orcamento_id', $orcamento->id)->orderBy('sequencial', 'asc');
         if (count($parcelas->get()) <= 0) {
             return Helper::msg_nok(
                 'SEM PARCELAS GERADAS',
@@ -218,8 +216,8 @@ class OrcamentoController extends Controller
             );
         }
 
-        $tot_liquido = doubleval(number_format($orcamento->total_liquido,2,'.',''));
-        $tot_parcelas = doubleval(number_format($parcelas->sum('valor'),2, '.',''));
+        $tot_liquido = doubleval(number_format($orcamento->total_liquido, 2, '.', ''));
+        $tot_parcelas = doubleval(number_format($parcelas->sum('valor'), 2, '.', ''));
 
         if ($tot_liquido !== $tot_parcelas) {
             return Helper::msg_nok(
@@ -243,7 +241,6 @@ class OrcamentoController extends Controller
                 ->with('parcelas', $parcelas->get())
                 ->render()
         ]);
-
     }
 
     /**
@@ -289,22 +286,22 @@ class OrcamentoController extends Controller
             $mov_financeiro = true;
 
         DB::beginTransaction();
-        try{
+        try {
 
             // GERAR FINANCEIRO
-            if ($mov_financeiro){
+            if ($mov_financeiro) {
 
                 $parcelas = OrcamentoParcela::where('orcamento_id', $orcamento->id)
                     ->get();
 
-                if (count($parcelas) <= 0){
+                if (count($parcelas) <= 0) {
                     return Helper::msg_nok('Não foram definidas parcelas para este orçamento');
                 }
 
                 // FAZ OS LANCAMENTOS NO RECEITA
                 $id_primeiro_lcto = 0;
                 $next = 0;
-                foreach ($parcelas as $parcela){
+                foreach ($parcelas as $parcela) {
 
                     $lcto = [];
                     $lcto['id_primeiro_lcto'] = 0;
@@ -312,7 +309,7 @@ class OrcamentoController extends Controller
                     $lcto['pessoa_id'] = $orcamento->cliente_id;
                     $lcto['tipo'] = 'RECEITA';
                     $lcto['categoria'] = 'NORMAL';
-                    $lcto['valor'] = number_format($parcela->valor,2,'.','');
+                    $lcto['valor'] = number_format($parcela->valor, 2, '.', '');
                     $lcto['saldo'] = $lcto['valor'];
                     $lcto['valor_original'] = $lcto['valor'];
                     $lcto['desconto_valor'] = 0;
@@ -335,7 +332,7 @@ class OrcamentoController extends Controller
 
                     $receita = Receita::create($lcto);
 
-                    if (!empty($receita)){
+                    if (!empty($receita)) {
 
                         if ($next == 0) {
                             $id_primeiro_lcto = $receita->id;
@@ -346,19 +343,19 @@ class OrcamentoController extends Controller
                             'id_primeiro_lcto' => $id_primeiro_lcto
                         ]);
 
-                        if (!$updated){
+                        if (!$updated) {
                             DB::rollBack();
                             return Helper::msg_nok('Houve um problema ao tentar atualizar o ID de contra partida');
                             break;
                         }
-                    }else{
+                    } else {
                         DB::rollBack();
                         return Helper::msg_nok('Financeiro não foi gerado.');
                         break;
                     }
 
                     // SE TIVER ENTRADA OU FOR AVISTA, LIQUIDAR E LANCAR NO CAIXA
-                    if (intval($parcela->avista) == 1){
+                    if (intval($parcela->avista) == 1) {
 
                         // LIQUIDA A PARCELA
                         $liquidacao = [];
@@ -405,7 +402,7 @@ class OrcamentoController extends Controller
                                 return Helper::msg_nok('Houve um problema ao tentar atualziar o ID de contra partida da liquidação');
                                 break;
                             }
-                        }else{
+                        } else {
                             DB::rollBack();
                             return Helper::msg_nok('Problema ao tentar gerar o lançamento de liquidação');
                             break;
@@ -417,7 +414,7 @@ class OrcamentoController extends Controller
                             'user_idRecPag' => $user_id,
                             'dh_RecPag' => date('Y-m-d H:i:s')
                         ]);
-                        if (!$updated){
+                        if (!$updated) {
                             DB::rollBack();
                             return Helper::msg_nok('Problema ao tentar atualizar o lançamento origem');
                             break;
@@ -437,7 +434,7 @@ class OrcamentoController extends Controller
                         $caixa_movimento['is_origem_externo'] = 1;
 
                         $movimento_created = CaixaMovimento::create($caixa_movimento);
-                        if (empty($movimento_created)){
+                        if (empty($movimento_created)) {
                             DB::rollBack();
                             return Helper::msg_nok('Problema ao tentar lançar no caixa');
                             break;
@@ -447,21 +444,17 @@ class OrcamentoController extends Controller
             }
 
             // BAIXA ESTOQUE
-            if ($mov_estoque){
+            if ($mov_estoque) {
                 $itens = OrcamentoItens::where('orcamento_id', $orcamento->id)->get();
                 if (count($itens) > 0) {
                     foreach ($itens as $item) {
                         $produtoEstoque = ProdutoEstoque::where('empresa_id', $empresa_id)
                             ->where('produto_id', $item->produto_id)
                             ->first();
-                        if (empty($produtoEstoque) || $produtoEstoque->estoque < $item->quantidade) {
-                            DB::rollBack();
-                            return response()->json([
-                                'status' => 'NOK',
-                                'data'   => 'Estoque insuficiente para o produto ' . $item->produto_id
-                            ]);
+                        if (!empty($produtoEstoque)) {
+                            $produtoEstoque->estoque = doubleval($produtoEstoque->estoque) - doubleval($item->quantidade);
+                            $produtoEstoque->save();
                         }
-                        $produtoEstoque->decrement('estoque', $item->quantidade);
                     }
                 }
             }
@@ -483,13 +476,10 @@ class OrcamentoController extends Controller
 
             DB::commit();
             return Helper::msg_ok('Orçamento faturado com sucesso.');
-
-
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
             return Helper::msg_exception($e->getMessage());
         }
-
     }
 
     /**
@@ -501,7 +491,7 @@ class OrcamentoController extends Controller
 
         $orcamento = Orcamento::find($orcamento->id);
 
-        if (empty($orcamento)){
+        if (empty($orcamento)) {
             return Helper::msg_nok('Orçamento não encontrado');
         }
 
@@ -512,17 +502,16 @@ class OrcamentoController extends Controller
             );
         }
 
-        if ($orcamento->status == 'CANCELADO'){
+        if ($orcamento->status == 'CANCELADO') {
             return Helper::msg_nok('Orçamento já esta cancelado');
         }
 
         return response()->json([
-           'status' => 'OK',
-           'view' => view('venda.orcamento_cancelar.index')
+            'status' => 'OK',
+            'view' => view('venda.orcamento_cancelar.index')
                 ->with('orcamento', $orcamento)
                 ->render()
         ]);
-
     }
 
     /**
@@ -548,12 +537,12 @@ class OrcamentoController extends Controller
 
         if ($orcamento->status == 'FATURADO') {
             return Helper::msg_nok(
-               'ORÇAMENTO FATURADO',
-               'Para cancelar, é necesário estornar primeiro'
+                'ORÇAMENTO FATURADO',
+                'Para cancelar, é necesário estornar primeiro'
             );
         }
 
-        if ($orcamento->status == 'CANCELADO'){
+        if ($orcamento->status == 'CANCELADO') {
             return Helper::msg_nok('Orçamento já esta cancelado');
         }
 
@@ -565,10 +554,9 @@ class OrcamentoController extends Controller
 
         if ($updated) {
             return Helper::msg_ok('Orçamento cancelado com sucesso.');
-        }else{
+        } else {
             return Helper::msg_nok('Houve algum problema ao tentar cancelar este orçamento');
         }
-
     }
 
     /**
@@ -580,7 +568,7 @@ class OrcamentoController extends Controller
 
         $orcamento = Orcamento::find($orcamento->id);
 
-        if (empty($orcamento)){
+        if (empty($orcamento)) {
             return Helper::msg_nok('Orçamento não encontrado');
         }
         if ($orcamento->status == 'ABERTO') {
@@ -609,7 +597,6 @@ class OrcamentoController extends Controller
                 ->with('orcamento', $orcamento)
                 ->render()
         ]);
-
     }
 
     /**
@@ -629,7 +616,7 @@ class OrcamentoController extends Controller
             ->where('id', $orcamento_id)
             ->first();
 
-        if (empty($orcamento)){
+        if (empty($orcamento)) {
             return Helper::msg_nok('Orçamento não encontrado');
         }
 
@@ -637,7 +624,7 @@ class OrcamentoController extends Controller
         $orcamento_parcelas = OrcamentoParcela::where('orcamento_id', $orcamento->id)
             ->get();
 
-        if (count($orcamento_parcelas) <= 0){
+        if (count($orcamento_parcelas) <= 0) {
             return Helper::msg_nok(
                 'NÃO EXISTE PARCELAS DEFINIDAS PARA ESTE ORÇAMENTO',
                 'Não é possível continuar'
@@ -648,7 +635,7 @@ class OrcamentoController extends Controller
         $orcamento_itens = OrcamentoItens::where('orcamento_id', $orcamento->id)
             ->get();
 
-        if (count($orcamento_itens) <= 0){
+        if (count($orcamento_itens) <= 0) {
             return Helper::msg_nok(
                 'NÃO EXISTE ITENS PARA ESTE ORÇAMENTO',
                 'Não é possível continuar'
@@ -666,7 +653,7 @@ class OrcamentoController extends Controller
         }
 
         $tipo_movimento = TipoMovimento::find($orcamento->tipo_movimento_id);
-        if (empty($tipo_movimento)){
+        if (empty($tipo_movimento)) {
             return Helper::msg_nok('Tipo de movimento não definido');
         }
 
@@ -681,15 +668,15 @@ class OrcamentoController extends Controller
 
                 // PEGA O LANCAMENTO 1
                 $lancamento_principal = Receita::where('empresa_id', $empresa_id)
-                                            ->where('tipo', 'RECEITA')
-                                            ->where('is_origem_externa', 1)
-                                            ->where('origem','VENDA')
-                                            ->where('parcela_inicio', 1)
-                                            ->where('categoria','!=','LIQUIDACAO')
-                                            ->where('doc_origem_id', $orcamento->id)
-                                            ->first();
+                    ->where('tipo', 'RECEITA')
+                    ->where('is_origem_externa', 1)
+                    ->where('origem', 'VENDA')
+                    ->where('parcela_inicio', 1)
+                    ->where('categoria', '!=', 'LIQUIDACAO')
+                    ->where('doc_origem_id', $orcamento->id)
+                    ->first();
 
-                if (empty($lancamento_principal)){
+                if (empty($lancamento_principal)) {
                     return Helper::msg_nok('Não foi encontrado o lançamento principal no financeiro');
                 }
 
@@ -699,13 +686,13 @@ class OrcamentoController extends Controller
                     ->where('id_primeiro_lcto', $lancamento_principal->id)
                     ->get();
                 $ids = [];
-                foreach ($rows as $row){
+                foreach ($rows as $row) {
                     array_push($ids, $row->id);
                 }
 
                 $valor = Receita::where('empresa_id', $empresa_id)
                     ->where('tipo', 'RECEITA')
-                    ->where('origem','VENDA')
+                    ->where('origem', 'VENDA')
                     ->where('categoria', 'LIQUIDACAO')
                     ->whereIn('id_contrapartida', $ids)
                     ->sum('valor');
@@ -718,7 +705,7 @@ class OrcamentoController extends Controller
                         'valor'
                     ])
                     ->where('tipo', 'RECEITA')
-                    ->where('origem','VENDA')
+                    ->where('origem', 'VENDA')
                     ->where('categoria', 'LIQUIDACAO')
                     ->whereIn('id_contrapartida', $ids);
 
@@ -727,26 +714,25 @@ class OrcamentoController extends Controller
                     $caixa_abertura_id = CaixaAbertura::caixaAbertoId();
                     $parcelas_vista = false;
                     $caixa_diff = false;
-                    foreach($orcamento_parcelas as $parcela){
-                        if ($parcela->avista == 1){
+                    foreach ($orcamento_parcelas as $parcela) {
+                        if ($parcela->avista == 1) {
                             $parcelas_vista = true;
                             break;
                         }
                     }
 
-                    if ($parcelas_vista){
-                        foreach ($liquidacoes->get() as $liquidacao){
-                            if ($liquidacao->caixa_abertura_id != $caixa_abertura_id){
+                    if ($parcelas_vista) {
+                        foreach ($liquidacoes->get() as $liquidacao) {
+                            if ($liquidacao->caixa_abertura_id != $caixa_abertura_id) {
                                 $caixa_diff = true;
                                 break;
                             }
                         }
                     }
 
-                    if (!CaixaAbertura::isCaixaAberto()){
+                    if (!CaixaAbertura::isCaixaAberto()) {
                         if ($parcelas_vista)
                             return Helper::msg_nok('Existe valor para estornar no caixa, mas o caixa esta fechado');
-
                     }
 
                     // FAZ O LANCAMENTO NO CAIXA
@@ -765,7 +751,7 @@ class OrcamentoController extends Controller
                         $caixa_movimento['is_origem_externo'] = 1;
 
                         $created = CaixaMovimento::create($caixa_movimento);
-                        if (empty($created)){
+                        if (empty($created)) {
                             DB::rollBack();
                             break;
                         }
@@ -779,7 +765,7 @@ class OrcamentoController extends Controller
                 Receita::where('empresa_id', $empresa_id)
                     ->where('tipo', 'RECEITA')
                     ->where('is_origem_externa', 1)
-                    ->where('origem','VENDA')
+                    ->where('origem', 'VENDA')
                     ->where('doc_origem_id', $orcamento->id)
                     ->delete();
             }
@@ -797,19 +783,19 @@ class OrcamentoController extends Controller
 
             // VOLTA O ESTOQUE
             if ($mov_estoque == 1) {
-                foreach ($orcamento_itens as $item){
+                foreach ($orcamento_itens as $item) {
                     $produtoEstoque = ProdutoEstoque::where('empresa_id', $empresa_id)
                         ->where('produto_id', $item->produto_id)
                         ->first();
-                    if (!empty($produtoEstoque)){
+                    if (!empty($produtoEstoque)) {
                         $produtoEstoque->estoque = doubleval($produtoEstoque->estoque) +
                             doubleval($item->quantidade);
                         $updated = $produtoEstoque->save();
-                        if (!$updated){
+                        if (!$updated) {
                             DB::rollBack();
                             break;
                         }
-                    }else{
+                    } else {
                         DB::rollBack();
                         break;
                     }
@@ -818,12 +804,10 @@ class OrcamentoController extends Controller
 
             DB::commit();
             return Helper::msg_ok("Orçamento estornado com sucesso.");
-
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
             return Helper::msg_exception($e->getMessage());
         }
-
     }
 
     /**
@@ -843,22 +827,21 @@ class OrcamentoController extends Controller
 
             $parcelas = OrcamentoParcela::where('orcamento_id', $orcamento->id)
                 ->get();
-            if (count($parcelas) > 0){
+            if (count($parcelas) > 0) {
                 $exists_avista = false;
-                foreach($parcelas as $parcela) {
-                    if (intval($parcela->avista) == 1){
+                foreach ($parcelas as $parcela) {
+                    if (intval($parcela->avista) == 1) {
                         $exists_avista = true;
                         break;
                     }
                 }
-                if ($exists_avista){
+                if ($exists_avista) {
                     return Helper::msg_nok(
                         'CAIXA FECHADO',
                         'Não encontramos nenhum caixa aberto para este usuário.'
                     );
                 }
             }
-
         }
         return null;
     }
@@ -884,37 +867,37 @@ class OrcamentoController extends Controller
         }
 
         if (empty($fields['orcamento_itens'])) {
-            return Helper::msg_nok2('NENHUM ITEM FOI ADICIONADO','Selecione os produtos e adicione no carrinho para continuar');
+            return Helper::msg_nok2('NENHUM ITEM FOI ADICIONADO', 'Selecione os produtos e adicione no carrinho para continuar');
         }
 
-        if ($fields['preco_item'] == 'PRAZO'){
+        if ($fields['preco_item'] == 'PRAZO') {
 
-        $total_bruto = 0;
-        foreach ($fields['orcamento_itens'] as $k => $v) {
-            $fields['orcamento_itens'][$k]['quantidade'] = str_replace(',', '.', $v['quantidade']);
-            $total_bruto += $fields['orcamento_itens'][$k]['quantidade'] * $v['preco_prazo'];
-            $modo_pag = 'PRAZO';
+            $total_bruto = 0;
+            foreach ($fields['orcamento_itens'] as $k => $v) {
+                $fields['orcamento_itens'][$k]['quantidade'] = str_replace(',', '.', $v['quantidade']);
+                $total_bruto += $fields['orcamento_itens'][$k]['quantidade'] * $v['preco_prazo'];
+                $modo_pag = 'PRAZO';
+            }
         }
-    }
 
-        if ($fields['preco_item'] == 'VISTA'){
+        if ($fields['preco_item'] == 'VISTA') {
 
-        $total_bruto = 0;
-        foreach ($fields['orcamento_itens'] as $k => $v) {
-            $fields['orcamento_itens'][$k]['quantidade'] = str_replace(',', '.', $v['quantidade']);
-            $total_bruto += $fields['orcamento_itens'][$k]['quantidade'] * $v['preco_vista'];
-            $modo_pag = 'VISTA';
+            $total_bruto = 0;
+            foreach ($fields['orcamento_itens'] as $k => $v) {
+                $fields['orcamento_itens'][$k]['quantidade'] = str_replace(',', '.', $v['quantidade']);
+                $total_bruto += $fields['orcamento_itens'][$k]['quantidade'] * $v['preco_vista'];
+                $modo_pag = 'VISTA';
+            }
         }
-    }
 
         $empresa_id = intval($request->session()->get('empresa')['id']);
 
         $fields['empresa_id'] = $empresa_id;
         $fields['status'] = 'ABERTO';
-        $fields['total_bruto'] = number_format($total_bruto, 2,'.', '');
+        $fields['total_bruto'] = number_format($total_bruto, 2, '.', '');
         $fields['desconto_valor'] = 0;
         $fields['desconto_porc'] = 0;
-        $fields['total_liquido'] = number_format($total_bruto, 2,'.', '');
+        $fields['total_liquido'] = number_format($total_bruto, 2, '.', '');
         $fields['valor_recebido'] = 0;
         $fields['valor_troco'] = 0;
         $fields['observacao'] = $modo_pag;
@@ -947,41 +930,40 @@ class OrcamentoController extends Controller
 
                 // CADASTRAR OS ITENS
                 $seq = 1;
-                try{
+                try {
 
-                    if ($fields['preco_item'] == 'PRAZO'){
+                    if ($fields['preco_item'] == 'PRAZO') {
 
-                    foreach ($fields['orcamento_itens'] as $item) {
-                        OrcamentoItens::create([
-                            'orcamento_id' => $orcamento->id,
-                            'produto_id' => $item['produto_id'],
-                            'sequencial' => $seq,
-                            'quantidade' => $item['quantidade'],
-                            'preco' => number_format($item['preco_prazo'], 2,'.',''),
-                            'desconto' => 0,
-                            'subtotal' => number_format($item['quantidade'] * $item['preco_prazo'], 2, '.', '')
-                        ]);
-                        $seq++;
+                        foreach ($fields['orcamento_itens'] as $item) {
+                            OrcamentoItens::create([
+                                'orcamento_id' => $orcamento->id,
+                                'produto_id' => $item['produto_id'],
+                                'sequencial' => $seq,
+                                'quantidade' => $item['quantidade'],
+                                'preco' => number_format($item['preco_prazo'], 2, '.', ''),
+                                'desconto' => 0,
+                                'subtotal' => number_format($item['quantidade'] * $item['preco_prazo'], 2, '.', '')
+                            ]);
+                            $seq++;
+                        }
                     }
-                }
 
-                if ($fields['preco_item'] == 'VISTA'){
+                    if ($fields['preco_item'] == 'VISTA') {
 
-                    foreach ($fields['orcamento_itens'] as $item) {
-                        OrcamentoItens::create([
-                            'orcamento_id' => $orcamento->id,
-                            'produto_id' => $item['produto_id'],
-                            'sequencial' => $seq,
-                            'quantidade' => $item['quantidade'],
-                            'preco' => number_format($item['preco_vista'], 2,'.',''),
-                            'desconto' => 0,
-                            'subtotal' => number_format($item['quantidade'] * $item['preco_vista'], 2, '.', '')
-                        ]);
-                        $seq++;
+                        foreach ($fields['orcamento_itens'] as $item) {
+                            OrcamentoItens::create([
+                                'orcamento_id' => $orcamento->id,
+                                'produto_id' => $item['produto_id'],
+                                'sequencial' => $seq,
+                                'quantidade' => $item['quantidade'],
+                                'preco' => number_format($item['preco_vista'], 2, '.', ''),
+                                'desconto' => 0,
+                                'subtotal' => number_format($item['quantidade'] * $item['preco_vista'], 2, '.', '')
+                            ]);
+                            $seq++;
+                        }
                     }
-                }
-
-                }catch (\Exception $e) {
+                } catch (\Exception $e) {
                     DB::rollBack();
                     return Helper::msg_exception($e->getMessage());
                 }
@@ -992,16 +974,13 @@ class OrcamentoController extends Controller
                     'insert_id' => $orcamento->id,
                     'message' => 'Orçamento Cadastrado'
                 ]);
-
             } else {
                 return Helper::msg_nok('Orçamento não Cadastrado/Alterado');
             }
-
         } catch (Exception $e) {
             DB::rollBack();
             return Helper::msg_exception($e->getMessage());
         }
-
     }
 
     /**
@@ -1023,24 +1002,24 @@ class OrcamentoController extends Controller
     {
         $orcamento = Orcamento::find($orcamento->id);
 
-        if (empty($orcamento)){
+        if (empty($orcamento)) {
             return Helper::msg_nok('Orçamento não encontrado');
         }
 
-        if (empty($orcamento->finalizacao)){
-            return Helper::msg_nok('ORÇAMENTO SEM FINALIZAÇÃO','Edite o orçamento e finalize');
+        if (empty($orcamento->finalizacao)) {
+            return Helper::msg_nok('ORÇAMENTO SEM FINALIZAÇÃO', 'Edite o orçamento e finalize');
         }
 
-        $parcelas = OrcamentoParcela::where('orcamento_id', $orcamento->id)->orderBy('sequencial','asc');
+        $parcelas = OrcamentoParcela::where('orcamento_id', $orcamento->id)->orderBy('sequencial', 'asc');
         if (count($parcelas->get()) <= 0) {
-            return Helper::msg_nok('SEM PARCELAS GERADAS','Edite o orçamento para gerar as parcelas');
+            return Helper::msg_nok('SEM PARCELAS GERADAS', 'Edite o orçamento para gerar as parcelas');
         }
 
         $formas = explode('/', $orcamento->finalizacao->forma_pagamento);
         $formas_com_title = [];
         foreach ($formas as $forma) {
             $ret = FormaPagamento::where('id', $forma)->first();
-            array_push($formas_com_title,array($forma => $ret->descricao));
+            array_push($formas_com_title, array($forma => $ret->descricao));
         }
 
         return response()->json([
@@ -1051,7 +1030,6 @@ class OrcamentoController extends Controller
                 ->with('parcelas', $parcelas->get())
                 ->render()
         ]);
-
     }
 
     /**
@@ -1082,7 +1060,7 @@ class OrcamentoController extends Controller
                     ])
                     ->where('i.orcamento_id', $orcamento->id)
                     ->where('e.empresa_id', $orcamento->empresa_id)
-                    ->get();    
+                    ->get();
 
                 return response()->json([
                     'status' => 'OK',
@@ -1091,11 +1069,9 @@ class OrcamentoController extends Controller
                         ->with('orcamento', $orcamento)
                         ->render()
                 ]);
-
             } else {
                 return Helper::msg_nok('Orçamento não encontrado');
             }
-
         } catch (\Exception $e) {
             return Helper::msg_exception($e->getMessage());
         }
@@ -1113,14 +1089,14 @@ class OrcamentoController extends Controller
 
         $orcamento = Orcamento::find($orcamento->id);
 
-        if (empty($orcamento)){
+        if (empty($orcamento)) {
             return Helper::msg_nok2('Orçamentos não encontrado');
         }
-        if ($orcamento->status == 'FATURADO'){
-            return Helper::msg_nok2('ORÇAMENTO JÁ FATURADO','Não é possível alterar');
+        if ($orcamento->status == 'FATURADO') {
+            return Helper::msg_nok2('ORÇAMENTO JÁ FATURADO', 'Não é possível alterar');
         }
-        if ($orcamento->status == 'CANCELADO'){
-            return Helper::msg_nok2('ORÇAMENTO CANCELADO','Não é possível alterar');
+        if ($orcamento->status == 'CANCELADO') {
+            return Helper::msg_nok2('ORÇAMENTO CANCELADO', 'Não é possível alterar');
         }
 
         $fields = $request->all();
@@ -1136,33 +1112,31 @@ class OrcamentoController extends Controller
         }
 
         if (empty($fields['orcamento_itens'])) {
-            return Helper::msg_nok2('NENHUM ITEM FOI ADICIONADO','Não é possível continuar');
+            return Helper::msg_nok2('NENHUM ITEM FOI ADICIONADO', 'Não é possível continuar');
         }
 
-        if ($fields['preco_item'] == 'PRAZO'){
+        if ($fields['preco_item'] == 'PRAZO') {
 
-        $total_bruto = 0;
-        foreach ($fields['orcamento_itens'] as $k => $v) {
-            $fields['orcamento_itens'][$k]['quantidade'] = str_replace(',', '.', $v['quantidade']);
-            $total_bruto += $fields['orcamento_itens'][$k]['quantidade'] * $v['preco_prazo'];
-            $modo_pag = 'PRAZO';
+            $total_bruto = 0;
+            foreach ($fields['orcamento_itens'] as $k => $v) {
+                $fields['orcamento_itens'][$k]['quantidade'] = str_replace(',', '.', $v['quantidade']);
+                $total_bruto += $fields['orcamento_itens'][$k]['quantidade'] * $v['preco_prazo'];
+                $modo_pag = 'PRAZO';
+            }
         }
 
-    }
+        if ($fields['preco_item'] == 'VISTA') {
 
-    if ($fields['preco_item'] == 'VISTA'){
-
-        $total_bruto = 0;
-        foreach ($fields['orcamento_itens'] as $k => $v) {
-            $fields['orcamento_itens'][$k]['quantidade'] = str_replace(',', '.', $v['quantidade']);
-            $total_bruto += $fields['orcamento_itens'][$k]['quantidade'] * $v['preco_vista'];
-            $modo_pag = 'VISTA';
+            $total_bruto = 0;
+            foreach ($fields['orcamento_itens'] as $k => $v) {
+                $fields['orcamento_itens'][$k]['quantidade'] = str_replace(',', '.', $v['quantidade']);
+                $total_bruto += $fields['orcamento_itens'][$k]['quantidade'] * $v['preco_vista'];
+                $modo_pag = 'VISTA';
+            }
         }
 
-    }
-
-        $fields['total_bruto'] = number_format($total_bruto, 2,'.', '');
-        $fields['total_liquido'] = number_format($total_bruto, 2,'.', '');
+        $fields['total_bruto'] = number_format($total_bruto, 2, '.', '');
+        $fields['total_liquido'] = number_format($total_bruto, 2, '.', '');
 
         try {
 
@@ -1186,37 +1160,37 @@ class OrcamentoController extends Controller
 
                 // CADASTRAR OS ITENS
                 $seq = 1;
-                if ($fields['preco_item'] == 'PRAZO'){
+                if ($fields['preco_item'] == 'PRAZO') {
 
-                foreach ($fields['orcamento_itens'] as $item) {
-                    OrcamentoItens::create([
-                        'orcamento_id' => $orcamento->id,
-                        'produto_id' => $item['produto_id'],
-                        'sequencial' => $seq,
-                        'quantidade' => $item['quantidade'],
-                        'preco' => number_format($item['preco_prazo'], 2, '.', ''),
-                        'desconto' => 0,
-                        'subtotal' => number_format($item['quantidade'] * $item['preco_prazo'], 2, '.', '')
-                    ]);
-                    $seq++;
+                    foreach ($fields['orcamento_itens'] as $item) {
+                        OrcamentoItens::create([
+                            'orcamento_id' => $orcamento->id,
+                            'produto_id' => $item['produto_id'],
+                            'sequencial' => $seq,
+                            'quantidade' => $item['quantidade'],
+                            'preco' => number_format($item['preco_prazo'], 2, '.', ''),
+                            'desconto' => 0,
+                            'subtotal' => number_format($item['quantidade'] * $item['preco_prazo'], 2, '.', '')
+                        ]);
+                        $seq++;
+                    }
                 }
-            }
 
-            if ($fields['preco_item'] == 'VISTA'){
+                if ($fields['preco_item'] == 'VISTA') {
 
-                foreach ($fields['orcamento_itens'] as $item) {
-                    OrcamentoItens::create([
-                        'orcamento_id' => $orcamento->id,
-                        'produto_id' => $item['produto_id'],
-                        'sequencial' => $seq,
-                        'quantidade' => $item['quantidade'],
-                        'preco' => number_format($item['preco_vista'], 2, '.', ''),
-                        'desconto' => 0,
-                        'subtotal' => number_format($item['quantidade'] * $item['preco_vista'], 2, '.', '')
-                    ]);
-                    $seq++;
+                    foreach ($fields['orcamento_itens'] as $item) {
+                        OrcamentoItens::create([
+                            'orcamento_id' => $orcamento->id,
+                            'produto_id' => $item['produto_id'],
+                            'sequencial' => $seq,
+                            'quantidade' => $item['quantidade'],
+                            'preco' => number_format($item['preco_vista'], 2, '.', ''),
+                            'desconto' => 0,
+                            'subtotal' => number_format($item['quantidade'] * $item['preco_vista'], 2, '.', '')
+                        ]);
+                        $seq++;
+                    }
                 }
-            }
 
                 DB::commit();
 
@@ -1225,11 +1199,9 @@ class OrcamentoController extends Controller
                     'insert_id' => $orcamento->id,
                     'message' => 'Orçamento Atualizado.'
                 ]);
-
             } else {
                 return Helper::msg_nok('Orçamento não alterado');
             }
-
         } catch (Exception $e) {
             DB::rollBack();
             return Helper::msg_exception($e->getMessage());
@@ -1250,7 +1222,8 @@ class OrcamentoController extends Controller
     /**
      * @return \Illuminate\Http\JsonResponse
      */
-    public function total_vendas_hoje(){
+    public function total_vendas_hoje()
+    {
         $empresa_id = intval(\Illuminate\Support\Facades\Request::session()->get('empresa')['id']);
 
         $total = DB::connection('db_client')
@@ -1265,18 +1238,18 @@ class OrcamentoController extends Controller
             'status' => 'OK',
             'message' => doubleval($total)
         ]);
-
     }
 
     /**
      * @return \Illuminate\Http\JsonResponse
      */
-    public function vendas_mes_grafico(){
+    public function vendas_mes_grafico()
+    {
         $empresa_id = intval(\Illuminate\Support\Facades\Request::session()->get('empresa')['id']);
 
         $totais = [];
-        $meses = ['01','02','03','04','05','06','07','08','09','10','11','12'];
-        for ($i=0; $i<12; $i++){
+        $meses = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+        for ($i = 0; $i < 12; $i++) {
 
             $total = DB::connection('db_client')
                 ->table('orcamentos', 'o')
@@ -1287,24 +1260,23 @@ class OrcamentoController extends Controller
                 ->whereRaw('DATE_FORMAT(o.dh_faturado, "%m") = ?', [$meses[$i]])
                 ->sum('o.total_liquido');
 
-            array_push($totais,$total);
-
+            array_push($totais, $total);
         }
 
         return response()->json([
             'status' => 'OK',
-            'meses' => ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho','julho','agosto','setembro','outubro','novembro','dezembro'],
+            'meses' => ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'],
             'totais' => $totais
         ]);
-
     }
 
-    public function orcamentos_criados_graf(){
+    public function orcamentos_criados_graf()
+    {
         $empresa_id = intval(\Illuminate\Support\Facades\Request::session()->get('empresa')['id']);
 
         $totais = [];
-        $meses = ['01','02','03','04','05','06','07','08','09','10','11','12'];
-        for ($i=0; $i<12; $i++){
+        $meses = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+        for ($i = 0; $i < 12; $i++) {
 
             $total = DB::connection('db_client')
                 ->table('orcamentos', 'o')
@@ -1315,19 +1287,18 @@ class OrcamentoController extends Controller
                 ->whereRaw('DATE_FORMAT(o.dh_faturado, "%m") = ?', [$meses[$i]])
                 ->count();
 
-            array_push($totais,$total);
-
+            array_push($totais, $total);
         }
 
         return response()->json([
             'status' => 'OK',
-            'meses' => ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho','julho','agosto','setembro','outubro','novembro','dezembro'],
+            'meses' => ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'],
             'totais' => $totais
         ]);
-
     }
 
-    public function email_create(Request $request){
+    public function email_create(Request $request)
+    {
 
         try {
 
@@ -1335,13 +1306,13 @@ class OrcamentoController extends Controller
 
             $param = ParametroFinanceiro::where('empresa_id', $empresa_id)->first();
 
-            if(empty($param)){
+            if (empty($param)) {
                 $param_email = '';
-            }else{
-                if($param->resp_finan == 1){
-                $param_email = $param->email_contador;
-                }else{
-                $param_email = $param->email_empresa; 
+            } else {
+                if ($param->resp_finan == 1) {
+                    $param_email = $param->email_contador;
+                } else {
+                    $param_email = $param->email_empresa;
                 }
             }
 
@@ -1349,7 +1320,7 @@ class OrcamentoController extends Controller
 
             $nf = NFeNFCe::where('orcamento_id', $request->id_orc_qual)->first();
 
-            if (!empty($orcamento)) {   
+            if (!empty($orcamento)) {
 
                 return response()->json([
                     'status' => 'OK',
@@ -1359,18 +1330,16 @@ class OrcamentoController extends Controller
                         ->with('param_email', $param_email)
                         ->render()
                 ]);
-
             } else {
                 return Helper::msg_nok('Erro ao carregar a central de envio de E-mail!');
             }
-
         } catch (\Exception $e) {
             return Helper::msg_exception($e->getMessage());
         }
-
     }
 
-    public function email_store(Request $request){
+    public function email_store(Request $request)
+    {
 
         try {
 
@@ -1382,35 +1351,32 @@ class OrcamentoController extends Controller
 
             $nf = NFeNFCe::where('orcamento_id', $request->id_orc)->first();
 
-        if($fields['tabActive'] == 'tabEmailClientes'){
+            if ($fields['tabActive'] == 'tabEmailClientes') {
 
-            //Verifica se o o user deixou os campos em branco
-            if(empty($fields['email_cliente'])){
+                //Verifica se o o user deixou os campos em branco
+                if (empty($fields['email_cliente'])) {
 
-                return response()->json([
-                    'status' => 'NOK',
-                    'data' => 'O campo "e-mail" ficou em branco, por favor preencha para continuar.'
-                ]);
+                    return response()->json([
+                        'status' => 'NOK',
+                        'data' => 'O campo "e-mail" ficou em branco, por favor preencha para continuar.'
+                    ]);
+                } else if (empty($fields['assunto_email'])) {
+                    return response()->json([
+                        'status' => 'NOK',
+                        'data' => 'Você deixou o campo "assunto" em branco, preencha para continuar.'
+                    ]);
+                } else if (empty($fields['story'])) {
+                    return response()->json([
+                        'status' => 'NOK',
+                        'data' => 'Você não colocou nenhuma "mensagem" para o cliente, escreva ou deixe a padrão.'
+                    ]);
+                }
 
-            }else if(empty($fields['assunto_email'])){
-                return response()->json([
-                    'status' => 'NOK',
-                    'data' => 'Você deixou o campo "assunto" em branco, preencha para continuar.'
-                ]);
+                //Dados complementares para função
+                $email_empresa = auth('web')->user()->empresa->email;
+                $cpf_cnpj = session()->get('empresa')['cpf_cnpj'];
 
-            }else if (empty($fields['story'])){
-                return response()->json([
-                    'status' => 'NOK',
-                    'data' => 'Você não colocou nenhuma "mensagem" para o cliente, escreva ou deixe a padrão.'
-                ]);
-
-            }
-
-            //Dados complementares para função
-            $email_empresa = auth('web')->user()->empresa->email;
-            $cpf_cnpj = session()->get('empresa')['cpf_cnpj'];
-
-            //Transforma o arquivo em PDF para enviar ao cliente
+                //Transforma o arquivo em PDF para enviar ao cliente
 
                 if (!empty($nf)) {
 
@@ -1424,341 +1390,307 @@ class OrcamentoController extends Controller
                         $params
                     );
 
-                    if (!empty($curl)){
+                    if (!empty($curl)) {
 
                         $response = curl_exec($curl);
 
                         curl_close($curl);
-
-                    }else{
+                    } else {
                         return response()->json([
                             'status' => 'NOK',
                             'data' => 'Não foi possível gerar sua nota para envio, por favor entre em contato com o suporte.'
                         ]);
                     }
-
                 } else {
                     return response()->json([
                         'status' => 'NOK',
                         'data' => 'Nota não encontrada para envio, por favor verifique os dados ou entre em contato com suporte.'
                     ]);
                 }
-            //------------------------------------------------------------------------------------------------------------------------
+                //------------------------------------------------------------------------------------------------------------------------
 
-            //Local aonde ficou salvo o PDF para envio    
-            $arquivo_pdf = $_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/Pdf/$cpf_cnpj/$nf->chave-nfe.pdf";
-            //-----------------------------------------------------------------------------------------    
+                //Local aonde ficou salvo o PDF para envio    
+                $arquivo_pdf = $_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/Pdf/$cpf_cnpj/$nf->chave-nfe.pdf";
+                //-----------------------------------------------------------------------------------------    
 
-            //Se a copia para o email do usuario estiver ativo manda uma copia do e-mail
-            if(intval($fields['copia_email']) == 0){
+                //Se a copia para o email do usuario estiver ativo manda uma copia do e-mail
+                if (intval($fields['copia_email']) == 0) {
 
-            $enviar = Mail::send('mail.envio', ['mens' => $fields['story']], function($m)use($request, $arquivo_pdf) {
-                $m->from('naoresponder@empirescloud.com.br', 'Empires Cloud');
-                $m->to(trim($request->email_cliente));
-                $m->subject($request->assunto_email);
-                $m->attach($arquivo_pdf);
-            });
-
-            }else{
-                $enviar = Mail::send('mail.envio', ['mens' => $fields['story']], function($m)use($request, $arquivo_pdf, $email_empresa) {
-                    $m->from('naoresponder@empirescloud.com.br', 'Empires Cloud');
-                    $m->to(trim($request->email_cliente));
-                    $m->to($email_empresa);
-                    $m->subject($request->assunto_email);
-                    $m->attach($arquivo_pdf);
-                });
-
-             }
-
-             $nf->update([
-                'is_email_enviado' => 1
-               ]);
-
-
-            if (!$enviar) {   
-
-                return response()->json([
-                    'status' => 'OK',
-                    'data' => 'E-mail enviado com sucesso.'
-                ]);
-
-            } else {
-                return response()->json([
-                    'status' => 'NOK',
-                    'data' => 'Não foi possível enviar seu e-mail.'
-                ]);
-            }
-
-        }else if($fields['tabActive'] == 'tabEmailContador'){
-
-            //Verifica se o o user deixou os campos em branco
-            if(empty($fields['email_contador'])){
-
-                return response()->json([
-                    'status' => 'NOK',
-                    'data' => 'O campo "e-mail" ficou em branco, por favor preencha para continuar.'
-                ]);
-
-            }else if(empty($fields['assunto_contador'])){
-                return response()->json([
-                    'status' => 'NOK',
-                    'data' => 'Você deixou o campo "assunto" em branco, preencha para continuar.'
-                ]);
-
-            }else if (empty($fields['story_contador'])){
-                return response()->json([
-                    'status' => 'NOK',
-                    'data' => 'Você não colocou nenhuma "mensagem" para o cliente, escreva ou deixe a padrão.'
-                ]);
-
-            }
-
-            //Obtendo o ano e o mês que foi lançado para buscar no sistema
-
-            //ANO
-            for($i = 0; $i < 1; $i++){
-                $a1 = ($nf->ide_dhEmi[$i]);
-            }
-            for($i = 0; $i < 2; $i++){
-                $a2 = ($nf->ide_dhEmi[$i]);
-            }
-            for($i = 0; $i < 3; $i++){
-                $a3 = ($nf->ide_dhEmi[$i]);
-            }
-            for($i = 0; $i < 4; $i++){
-                $a4 = ($nf->ide_dhEmi[$i]);
-            }
-
-            //MÊS
-            for($i = 0; $i < 6; $i++){
-                $a5 = ($nf->ide_dhEmi[$i]);
+                    $enviar = Mail::send('mail.envio', ['mens' => $fields['story']], function ($m) use ($request, $arquivo_pdf) {
+                        $m->from('naoresponder@empirescloud.com.br', 'Empires Cloud');
+                        $m->to(trim($request->email_cliente));
+                        $m->subject($request->assunto_email);
+                        $m->attach($arquivo_pdf);
+                    });
+                } else {
+                    $enviar = Mail::send('mail.envio', ['mens' => $fields['story']], function ($m) use ($request, $arquivo_pdf, $email_empresa) {
+                        $m->from('naoresponder@empirescloud.com.br', 'Empires Cloud');
+                        $m->to(trim($request->email_cliente));
+                        $m->to($email_empresa);
+                        $m->subject($request->assunto_email);
+                        $m->attach($arquivo_pdf);
+                    });
                 }
-                for($i = 0; $i < 7; $i++){
-                $a6 = ($nf->ide_dhEmi[$i]);
-            }
 
-            //----------------------------------------------------------------
-            //Dados complementares para função
-            $cpf_cnpj = session()->get('empresa')['cpf_cnpj'];
-
-            //Local aonde ficou salvo o PDF para envio    
-            $arquivo_xml = $_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/NotasFiscais/$cpf_cnpj/$a1$a2$a3$a4$a5$a6/$nf->chave-nfe.xml";
-            //-----------------------------------------------------------------------------------------    
-
-            if($request->modo_envio == 0){
-
-            $enviar_xml = Mail::send('mail.envio', ['mens' => $fields['story_contador']], function($m)use($request, $arquivo_xml) {
-                $m->from('naoresponder@empirescloud.com.br', 'Empires Cloud');
-                $m->to(trim($request->email_contador));
-                $m->subject($request->assunto_contador);
-                $m->attach($arquivo_xml);
-            });
-
-            if (!$enviar_xml) {   
-
-                return response()->json([
-                    'status' => 'OK',
-                    'data' => 'E-mail enviado com sucesso.'
+                $nf->update([
+                    'is_email_enviado' => 1
                 ]);
 
-            } else {
-                return response()->json([
-                    'status' => 'NOK',
-                    'data' => 'Não foi possível enviar seu e-mail.'
-                ]);
-            }
 
-            }else if($request->modo_envio == 1){
+                if (!$enviar) {
 
-                $eventos = $request->eventos_xml_contador;
-                // Criar instancia de ZipArchive
-                $zip = new ZipArchive;
-                $zip_ev = new ZipArchive;
-                $zip_final = new ZipArchive;
-                $zip_temp = new ZipArchive;
+                    return response()->json([
+                        'status' => 'OK',
+                        'data' => 'E-mail enviado com sucesso.'
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 'NOK',
+                        'data' => 'Não foi possível enviar seu e-mail.'
+                    ]);
+                }
+            } else if ($fields['tabActive'] == 'tabEmailContador') {
 
-                $fileName_temp = '-XML.zip';
-                $fileName = '-XML.zip'; // nome do zip
-                $fileName_ev = '-XML_EV.zip'; // nome do zip - EVENTOS
-                $fileName_final = '-XML_&_EVENTOS.zip'; //nome do zip com os arquivos de eventos e XML do mÊs
+                //Verifica se o o user deixou os campos em branco
+                if (empty($fields['email_contador'])) {
 
-                //Teste para verificar se tem alguma pasta de eventos do cliente
-                $teste_cliente = $_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/Eventos/$cpf_cnpj/$request->ano_xml_contador$request->meses_xml_contador/";
-                $teste_cliente2 = $_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/NotasFiscais/$cpf_cnpj/$request->ano_xml_contador$request->meses_xml_contador/";
+                    return response()->json([
+                        'status' => 'NOK',
+                        'data' => 'O campo "e-mail" ficou em branco, por favor preencha para continuar.'
+                    ]);
+                } else if (empty($fields['assunto_contador'])) {
+                    return response()->json([
+                        'status' => 'NOK',
+                        'data' => 'Você deixou o campo "assunto" em branco, preencha para continuar.'
+                    ]);
+                } else if (empty($fields['story_contador'])) {
+                    return response()->json([
+                        'status' => 'NOK',
+                        'data' => 'Você não colocou nenhuma "mensagem" para o cliente, escreva ou deixe a padrão.'
+                    ]);
+                }
 
-                $zipPath = $_SERVER['DOCUMENT_ROOT']. "/../../ApiFiscal/Release/XmlFiscal/XML_Gerados/".$cpf_cnpj.'-'.$request->meses_xml_contador.'.'.$request->ano_xml_contador.($fileName); // path do zip onde fica salvo para o download
-                $zipPath_temp = $_SERVER['DOCUMENT_ROOT']. "/../../ApiFiscal/Release/XmlFiscal/Temp_download/".$cpf_cnpj.'-'.$request->meses_xml_contador.'.'.$request->ano_xml_contador.($fileName_temp);
-                $zipPath_ev = $_SERVER['DOCUMENT_ROOT']. "/../../ApiFiscal/Release/XmlFiscal/Temp_download/".$cpf_cnpj.'-'.$request->meses_xml_contador.'.'.$request->ano_xml_contador.($fileName_ev); // path do zip onde fica salvo para o download
-                $zipPath_final = $_SERVER['DOCUMENT_ROOT']. "/../../ApiFiscal/Release/XmlFiscal/Download_ev_xml/".$cpf_cnpj.'-'.$request->meses_xml_contador.'.'.$request->ano_xml_contador.($fileName_final); // path do zip onde fica salvo o ultimo arquivo para ser baixado
+                //Obtendo o ano e o mês que foi lançado para buscar no sistema
 
-                if($eventos == 'SEM'){
-    
-                    if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE)
-                    {
-            
-                        if (file_exists($teste_cliente2)){
-            
-                      // arquivos que serao adicionados ao zip
-                      $files = File::files($_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/NotasFiscais/$cpf_cnpj/$request->ano_xml_contador$request->meses_xml_contador/");
-                
-                            foreach ($files as $key => $value) {
+                //ANO
+                for ($i = 0; $i < 1; $i++) {
+                    $a1 = ($nf->ide_dhEmi[$i]);
+                }
+                for ($i = 0; $i < 2; $i++) {
+                    $a2 = ($nf->ide_dhEmi[$i]);
+                }
+                for ($i = 0; $i < 3; $i++) {
+                    $a3 = ($nf->ide_dhEmi[$i]);
+                }
+                for ($i = 0; $i < 4; $i++) {
+                    $a4 = ($nf->ide_dhEmi[$i]);
+                }
+
+                //MÊS
+                for ($i = 0; $i < 6; $i++) {
+                    $a5 = ($nf->ide_dhEmi[$i]);
+                }
+                for ($i = 0; $i < 7; $i++) {
+                    $a6 = ($nf->ide_dhEmi[$i]);
+                }
+
+                //----------------------------------------------------------------
+                //Dados complementares para função
+                $cpf_cnpj = session()->get('empresa')['cpf_cnpj'];
+
+                //Local aonde ficou salvo o PDF para envio    
+                $arquivo_xml = $_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/NotasFiscais/$cpf_cnpj/$a1$a2$a3$a4$a5$a6/$nf->chave-nfe.xml";
+                //-----------------------------------------------------------------------------------------    
+
+                if ($request->modo_envio == 0) {
+
+                    $enviar_xml = Mail::send('mail.envio', ['mens' => $fields['story_contador']], function ($m) use ($request, $arquivo_xml) {
+                        $m->from('naoresponder@empirescloud.com.br', 'Empires Cloud');
+                        $m->to(trim($request->email_contador));
+                        $m->subject($request->assunto_contador);
+                        $m->attach($arquivo_xml);
+                    });
+
+                    if (!$enviar_xml) {
+
+                        return response()->json([
+                            'status' => 'OK',
+                            'data' => 'E-mail enviado com sucesso.'
+                        ]);
+                    } else {
+                        return response()->json([
+                            'status' => 'NOK',
+                            'data' => 'Não foi possível enviar seu e-mail.'
+                        ]);
+                    }
+                } else if ($request->modo_envio == 1) {
+
+                    $eventos = $request->eventos_xml_contador;
+                    // Criar instancia de ZipArchive
+                    $zip = new ZipArchive;
+                    $zip_ev = new ZipArchive;
+                    $zip_final = new ZipArchive;
+                    $zip_temp = new ZipArchive;
+
+                    $fileName_temp = '-XML.zip';
+                    $fileName = '-XML.zip'; // nome do zip
+                    $fileName_ev = '-XML_EV.zip'; // nome do zip - EVENTOS
+                    $fileName_final = '-XML_&_EVENTOS.zip'; //nome do zip com os arquivos de eventos e XML do mÊs
+
+                    //Teste para verificar se tem alguma pasta de eventos do cliente
+                    $teste_cliente = $_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/Eventos/$cpf_cnpj/$request->ano_xml_contador$request->meses_xml_contador/";
+                    $teste_cliente2 = $_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/NotasFiscais/$cpf_cnpj/$request->ano_xml_contador$request->meses_xml_contador/";
+
+                    $zipPath = $_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/XML_Gerados/" . $cpf_cnpj . '-' . $request->meses_xml_contador . '.' . $request->ano_xml_contador . ($fileName); // path do zip onde fica salvo para o download
+                    $zipPath_temp = $_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/Temp_download/" . $cpf_cnpj . '-' . $request->meses_xml_contador . '.' . $request->ano_xml_contador . ($fileName_temp);
+                    $zipPath_ev = $_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/Temp_download/" . $cpf_cnpj . '-' . $request->meses_xml_contador . '.' . $request->ano_xml_contador . ($fileName_ev); // path do zip onde fica salvo para o download
+                    $zipPath_final = $_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/Download_ev_xml/" . $cpf_cnpj . '-' . $request->meses_xml_contador . '.' . $request->ano_xml_contador . ($fileName_final); // path do zip onde fica salvo o ultimo arquivo para ser baixado
+
+                    if ($eventos == 'SEM') {
+
+                        if ($zip->open($zipPath, ZipArchive::CREATE) === TRUE) {
+
+                            if (file_exists($teste_cliente2)) {
+
+                                // arquivos que serao adicionados ao zip
+                                $files = File::files($_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/NotasFiscais/$cpf_cnpj/$request->ano_xml_contador$request->meses_xml_contador/");
+
+                                foreach ($files as $key => $value) {
+                                    // nome/diretorio do arquivo dentro do zip
+                                    $relativeNameInZipFile = basename($value);
+
+                                    // adicionar arquivo ao zip
+                                    $zip->addFile($value, $relativeNameInZipFile);
+                                }
+
+                                // concluir a operacao
+                                $zip->close();
+
+                                $enviar_xml = Mail::send('mail.envio', ['mens' => $fields['story_contador']], function ($m) use ($request, $arquivo_xml, $zipPath) {
+                                    $m->from('naoresponder@empirescloud.com.br', 'Empires Cloud');
+                                    $m->to(trim($request->email_contador));
+                                    $m->subject($request->assunto_contador);
+                                    $m->attach($zipPath);
+                                });
+
+                                if (!$enviar_xml) {
+
+                                    return response()->json([
+                                        'status' => 'OK',
+                                        'data' => 'E-mail enviado com sucesso.'
+                                    ]);
+                                } else {
+                                    return response()->json([
+                                        'status' => 'NOK',
+                                        'data' => 'Não foi possível enviar seu e-mail.'
+                                    ]);
+                                }
+                            } else {
+
+                                return response()->json([
+                                    'status' => 'NOK',
+                                    'data' => 'Não foram encontrados XML para seu período, retorne e tente enviar de outro mês.'
+                                ]);
+                            }
+                        }
+                    } else if ($eventos == 'COM') {
+
+
+                        if ($zip_ev->open($zipPath_ev, ZipArchive::CREATE) === TRUE) {
+                            if (file_exists($teste_cliente)) {
+
+                                // arquivos que serao adicionados ao zip
+                                $files_ev = File::files($_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/Eventos/$cpf_cnpj/$request->ano_xml_contador$request->meses_xml_contador/");
+
+                                foreach ($files_ev as $key_ev => $value_ev) {
+                                    // nome/diretorio do arquivo dentro do zip
+                                    $relativeNameInZipFile_ev = basename($value_ev);
+
+                                    // adicionar arquivo ao zip
+                                    $zip_ev->addFile($value_ev, $relativeNameInZipFile_ev);
+                                }
+
+                                // concluir a operacao
+                                $zip_ev->close();
+                            } else {
+
+                                return response()->json([
+                                    'status' => 'NOK',
+                                    'data' => 'Retorne a pesquisa e mande seus XML -> SEM EVENTOS NFe <-'
+                                ]);
+                            }
+                        }
+
+                        if ($zip_temp->open($zipPath_temp, ZipArchive::CREATE) === TRUE) {
+                            if (file_exists($teste_cliente2)) {
+
+                                // arquivos que serao adicionados ao zip
+                                $files_temp = File::files($_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/NotasFiscais/$cpf_cnpj/$request->ano_xml_contador$request->meses_xml_contador/");
+
+                                foreach ($files_temp as $key_temp => $value_temp) {
+                                    // nome/diretorio do arquivo dentro do zip
+                                    $relativeNameInZipFile_temp = basename($value_temp);
+
+                                    // adicionar arquivo ao zip
+                                    $zip_temp->addFile($value_temp, $relativeNameInZipFile_temp);
+                                }
+
+                                // concluir a operacao
+                                $zip_temp->close();
+                            } else {
+
+                                return response()->json([
+                                    'status' => 'NOK',
+                                    'data' => 'Não foram encontrados XML para seu período, retorne e tente enviar de outro mês.'
+                                ]);
+                            }
+                        }
+
+                        if ($zip_final->open($zipPath_final, ZipArchive::CREATE) === TRUE) {
+
+                            // arquivos que serao adicionados ao zip
+                            $files_final = File::files($_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/Temp_download/");
+
+                            foreach ($files_final as $key_final => $value_final) {
                                 // nome/diretorio do arquivo dentro do zip
-                                $relativeNameInZipFile = basename($value);
-                        
-                                // adicionar arquivo ao zip
-                                $zip->addFile($value, $relativeNameInZipFile);
-                                
-                              }
-                            
-                              // concluir a operacao
-                              $zip->close();
+                                $relativeNameInZipFile_final = basename($value_final);
 
-                              $enviar_xml = Mail::send('mail.envio', ['mens' => $fields['story_contador']], function($m)use($request, $arquivo_xml, $zipPath) {
+                                // adicionar arquivo ao zip
+                                $zip_final->addFile($value_final, $relativeNameInZipFile_final);
+                            }
+
+                            // concluir a operacao
+                            $zip_final->close();
+
+                            $enviar_xml = Mail::send('mail.envio', ['mens' => $fields['story_contador']], function ($m) use ($request, $arquivo_xml, $zipPath_final) {
                                 $m->from('naoresponder@empirescloud.com.br', 'Empires Cloud');
                                 $m->to(trim($request->email_contador));
                                 $m->subject($request->assunto_contador);
-                                $m->attach($zipPath);
+                                $m->attach($zipPath_final);
                             });
 
-                            if (!$enviar_xml) {   
+                            //removemos o arquivo zip após download
+                            unlink($zipPath_temp);
+                            unlink($zipPath_ev);
+
+                            if (!$enviar_xml) {
 
                                 return response()->json([
                                     'status' => 'OK',
                                     'data' => 'E-mail enviado com sucesso.'
                                 ]);
-                
                             } else {
                                 return response()->json([
                                     'status' => 'NOK',
                                     'data' => 'Não foi possível enviar seu e-mail.'
                                 ]);
                             }
-            
-                    }else{
-            
-                        return response()->json([
-                            'status' => 'NOK',
-                            'data' => 'Não foram encontrados XML para seu período, retorne e tente enviar de outro mês.'
-                        ]);
-                    }   
-                    }
-
-                }else if($eventos == 'COM'){
-                
-
-                if ($zip_ev->open($zipPath_ev, ZipArchive::CREATE) === TRUE)
-                {
-                        if (file_exists($teste_cliente)){
-
-                        // arquivos que serao adicionados ao zip
-                        $files_ev = File::files($_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/Eventos/$cpf_cnpj/$request->ano_xml_contador$request->meses_xml_contador/");
-
-                        foreach ($files_ev as $key_ev => $value_ev) {
-                        // nome/diretorio do arquivo dentro do zip
-                        $relativeNameInZipFile_ev = basename($value_ev);
-
-                        // adicionar arquivo ao zip
-                        $zip_ev->addFile($value_ev, $relativeNameInZipFile_ev);
-
-                    }
-
-                        // concluir a operacao
-                        $zip_ev->close();
-
-                    }else{
-
-                        return response()->json([
-                            'status' => 'NOK',
-                            'data' => 'Retorne a pesquisa e mande seus XML -> SEM EVENTOS NFe <-'
-                        ]);
-                        
-
-                    }
-                }
-
-                if ($zip_temp->open($zipPath_temp, ZipArchive::CREATE) === TRUE)
-                {
-                        if (file_exists($teste_cliente2)){
-
-                    // arquivos que serao adicionados ao zip
-                    $files_temp = File::files($_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/NotasFiscais/$cpf_cnpj/$request->ano_xml_contador$request->meses_xml_contador/");
-
-                            foreach ($files_temp as $key_temp => $value_temp) {
-                                // nome/diretorio do arquivo dentro do zip
-                                $relativeNameInZipFile_temp = basename($value_temp);
-                        
-                                // adicionar arquivo ao zip
-                                $zip_temp->addFile($value_temp, $relativeNameInZipFile_temp);
-                                
-                            }
-                            
-                            // concluir a operacao
-                            $zip_temp->close();
-
-                            }else{
-
-                                return response()->json([
-                                    'status' => 'NOK',
-                                    'data' => 'Não foram encontrados XML para seu período, retorne e tente enviar de outro mês.'
-                                ]);
-                    }
-                }
-
-                if ($zip_final->open($zipPath_final, ZipArchive::CREATE) === TRUE)
-                {
-
-                        // arquivos que serao adicionados ao zip
-                        $files_final = File::files($_SERVER['DOCUMENT_ROOT'] . "/../../ApiFiscal/Release/XmlFiscal/Temp_download/");
-
-                        foreach ($files_final as $key_final => $value_final) {
-                        // nome/diretorio do arquivo dentro do zip
-                        $relativeNameInZipFile_final = basename($value_final);
-
-                        // adicionar arquivo ao zip
-                        $zip_final->addFile($value_final, $relativeNameInZipFile_final);
-
-                    }
-
-                        // concluir a operacao
-                        $zip_final->close();
-
-                        $enviar_xml = Mail::send('mail.envio', ['mens' => $fields['story_contador']], function($m)use($request, $arquivo_xml, $zipPath_final) {
-                            $m->from('naoresponder@empirescloud.com.br', 'Empires Cloud');
-                            $m->to(trim($request->email_contador));
-                            $m->subject($request->assunto_contador);
-                            $m->attach($zipPath_final);
-                        });
-
-                        //removemos o arquivo zip após download
-                            unlink($zipPath_temp);
-                            unlink($zipPath_ev);
-
-                        if (!$enviar_xml) {   
-
-                            return response()->json([
-                                'status' => 'OK',
-                                'data' => 'E-mail enviado com sucesso.'
-                            ]);
-            
-                        } else {
-                            return response()->json([
-                                'status' => 'NOK',
-                                'data' => 'Não foi possível enviar seu e-mail.'
-                            ]);
                         }
-
-
-                } 
-
+                    }
                 }
             }
-
-        }
-
         } catch (\Exception $e) {
             return Helper::msg_exception($e->getMessage());
         }
-
     }
-
 }
