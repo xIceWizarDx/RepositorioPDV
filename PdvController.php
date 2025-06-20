@@ -71,11 +71,18 @@ class PdvController extends Controller
 
         Log::debug('[PdvController@index] paymentConditions final:', $paymentConditions);
 
+        $orcamento = null;
+        $orcamentoId = request('orcamento_id');
+        if ($orcamentoId) {
+            $orcamento = \App\Models\Venda\Orcamento::find($orcamentoId);
+        }
+
         return view('pdv', compact(
             'clientes',
             'vendedores',
             'formasPagamento',
-            'paymentConditions'
+            'paymentConditions',
+            'orcamento'
         ));
     }
 
